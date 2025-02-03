@@ -1,0 +1,63 @@
+{
+    "name": "swissspidy/ai-command",
+    "type": "wp-cli-package",
+    "description": "",
+    "homepage": "https://github.com/swissspidy/ai-command",
+    "license": "MIT",
+    "authors": [],
+    "require": {
+        "gemini-api-php/client": "^1.7",
+        "logiscape/mcp-sdk-php": "^1.0",
+        "symfony/http-client": "^7.2",
+        "wp-cli/wp-cli": "^2.12"
+    },
+    "require-dev": {
+        "wp-cli/wp-cli-tests": "^v4.3.6"
+    },
+    "config": {
+        "process-timeout": 7200,
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.x-dev"
+        },
+        "bundled": false,
+        "commands": [
+            "ai",
+            "ai prompt"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "WP_CLI\\AiCommand\\": "src/",
+            "WP_CLI\\AiCommand\\MCP\\": "src/MCP"
+        },
+        "files": [
+            "ai-command.php"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "behat": "run-behat-tests",
+        "behat-rerun": "rerun-behat-tests",
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpunit": "run-php-unit-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpunit",
+            "@behat"
+        ]
+    },
+    "support": {
+        "issues": "https://github.com/swissspidy/ai-command/issues"
+    }
+}
