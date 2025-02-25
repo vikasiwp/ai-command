@@ -37,7 +37,7 @@ class AiCommand extends WP_CLI_Command {
 	 *     $ wp ai "create 10 test posts about swiss recipes and include generated featured images"
 	 *     Success: Hello World!
 	 *
-	 * @when before_wp_load
+	 * @when after_wp_load
 	 *
 	 * @param array $args Indexed array of positional arguments.
 	 * @param array $assoc_args Associative array of associative arguments.
