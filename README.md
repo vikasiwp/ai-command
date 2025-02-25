@@ -1,17 +1,28 @@
-swissspidy/ai-command
-=====================
+# WP-CLI as an MCP Host
 
+This repository is for the [CloudFest Hackathon 2025 project](https://hackathon.cloudfest.com/project/wp-cli-mcp-host/) to implement the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) in the WordPress ecosystem, specifically integrating it with WP-CLI.
 
+The core innovation is transforming WordPress into an MCP Server and WP-CLI into an MCP Host through a new package, enabling direct AI interactions with WordPress installations during development. This approach provides developers with powerful AI capabilities without requiring a live site or REST API endpoints.
 
-[![Build Status](https://travis-ci.org/swissspidy/ai-command.svg?branch=master)](https://travis-ci.org/swissspidy/ai-command)
+**WordPress MCP Server Layer:**
 
-Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
+1. Implementation of MCP Server interfaces in WordPress
+2. Resource providers for posts, pages, media, and other WordPress content types
+3. Tool definitions for common WordPress actions (content creation, media handling)
+4. Context providers for WordPress configuration and site state
 
-## Using
+**WP-CLI MCP Host Package:**
 
-~~~
-wp hello-world
-~~~
+1. MCP Host implementation within WP-CLI framework
+2. New command namespace for AI operations
+3. Integration with (local and remote) LLM providers
+4. Transport layer for local WordPress communication
+
+You can think of MCP as the "USB port for LLMs", a standard way for LLMs to interact with any third-party system using things like function calling.
+
+While the Hackathon project focuses on WP-CLI, the _MCP Server_ is usage-agnostic. It could also be exposed via HTTP or so in the future.
+
+The _MCP Host_, gets information (such as list of available tools) from the server and passes it on to the LLM (e.g. Gemini).
 
 ## Installing
 
@@ -26,7 +37,7 @@ wp package install swissspidy/ai-command:@stable
 To install the latest development version of this package, use the following command instead:
 
 ```bash
-wp package install swissspidy/ai-command:dev-master
+wp package install swissspidy/ai-command:dev-main
 ```
 
 ## Contributing
@@ -54,6 +65,3 @@ Once you've decided to commit the time to seeing your pull request through, [ple
 ## Support
 
 GitHub issues aren't for general support questions, but there are other venues you can try: https://wp-cli.org/#support
-
-
-*This README.md is generated dynamically from the project's codebase using `wp scaffold package-readme` ([doc](https://github.com/wp-cli/scaffold-package-command#wp-scaffold-package-readme)). To suggest changes, please submit a pull request against the corresponding part of the codebase.*
