@@ -8,9 +8,12 @@ use Felix_Arntz\AI_Services\Services\API\Enums\Content_Role;
 use Felix_Arntz\AI_Services\Services\API\Helpers;
 use Felix_Arntz\AI_Services\Services\API\Types\Content;
 use Felix_Arntz\AI_Services\Services\API\Types\Parts;
+use Felix_Arntz\AI_Services\Services\API\Types\Parts\File_Data_Part;
 use Felix_Arntz\AI_Services\Services\API\Types\Parts\Function_Call_Part;
+use Felix_Arntz\AI_Services\Services\API\Types\Parts\Inline_Data_Part;
 use Felix_Arntz\AI_Services\Services\API\Types\Parts\Text_Part;
 use Felix_Arntz\AI_Services\Services\API\Types\Tools;
+use WP_CLI;
 
 class Client {
 
@@ -55,7 +58,8 @@ class Client {
 		return $this->sendRequest( 'resources/read', [ 'uri' => $uri ] );
 	}
 
-	public function generate_image( string $prompt ) {
+	// Must not have the same name as the tool, otherwise it takes precedence.
+	public function get_image_from_ai_service( string $prompt ) {
 		// See https://github.com/felixarntz/ai-services/issues/25.
 		add_filter(
 			'map_meta_cap',
@@ -83,26 +87,43 @@ class Client {
 				)
 				->generate_image( $prompt );
 
-			$image_url = '';
-			foreach ( $candidates->get( 0 )->get_content()->get_parts() as $part ) {
-				if ( $part instanceof \Felix_Arntz\AI_Services\Services\API\Types\Parts\Inline_Data_Part ) {
-					$image_url = $part->get_base64_data(); // Data URL.
-					break;
-				}
-				if ( $part instanceof \Felix_Arntz\AI_Services\Services\API\Types\Parts\File_Data_Part ) {
-					$image_url = $part->get_file_uri(); // Actual URL. May have limited TTL (often 1 hour).
-					break;
-				}
-			}
-
-			// See https://github.com/felixarntz/ai-services/blob/main/docs/Accessing-AI-Services-in-PHP.md for further processing.
-
-			return $image_url;
 		} catch ( Exception $e ) {
-			\WP_CLI::error( $e->getMessage() );
+			WP_CLI::error( $e->getMessage() );
 		}
 
-		\WP_CLI::error( 'Could not generate image.' );
+		$image_url = '';
+		foreach ( $candidates->get( 0 )->get_content()->get_parts() as $part ) {
+			if ( $part instanceof Inline_Data_Part ) {
+				$image_url = $part->get_base64_data(); // Data URL.
+				$image_blob = Helpers::base64_data_url_to_blob( $image_url );
+
+				if ( $image_blob ) {
+					$filename = tempnam("/tmp", "ai-generated-image");
+					$parts = explode( "/", $part->get_mime_type() );
+					$extension = $parts[1];
+					rename( $filename, $filename . "." . $extension );
+					$filename .= "." . $extension;
+
+					file_put_contents($filename, $image_blob->get_binary_data() );
+
+					$image_url = $filename;
+				}
+
+				break;
+			}
+
+			if ( $part instanceof File_Data_Part ) {
+				$image_url = $part->get_file_uri(); // Actual URL. May have limited TTL (often 1 hour).
+				// TODO: Save as file or so.
+				break;
+			}
+		}
+
+		// See https://github.com/felixarntz/ai-services/blob/main/docs/Accessing-AI-Services-in-PHP.md for further processing.
+
+		WP_CLI::log( "Generated image: $image_url" );
+
+		return $image_url;
 	}
 
 	public function call_ai_service_with_prompt( string $prompt ) {
@@ -174,6 +195,7 @@ class Client {
 					}
 					$text .= $part->get_text();
 				} elseif ( $part instanceof Function_Call_Part ) {
+					var_dump('call function', $part);
 					$function_result = $this->{$part->get_name()}( $part->get_args() );
 
 					// Odd limitation of add_function_response_part().
@@ -200,7 +222,7 @@ class Client {
 
 			return $text;
 		} catch ( Exception $e ) {
-			\WP_CLI::error( $e->getMessage() );
+			WP_CLI::error( $e->getMessage() );
 		}
 	}
 }

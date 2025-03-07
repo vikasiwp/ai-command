@@ -98,6 +98,21 @@ class AiCommand extends WP_CLI_Command {
 
 		$client = new MCP\Client( $server );
 
+		$server->registerTool( [
+			'name'        => 'generate_image',
+			'description' => 'Generates an image.',
+			'inputSchema' => [
+				'type'       => 'object',
+				'properties' => [
+					'prompt' => [ 'type' => 'string', 'description' => 'The prompt for generating the image.' ],
+				],
+				'required'   => [ 'prompt' ],
+			],
+			'callable'    => function ( $params ) use ( $client ) {
+				return $client->get_image_from_ai_service( $params['prompt'] );
+			},
+		] );
+
 		$result = $client->call_ai_service_with_prompt( $args[0] );
 
 		WP_CLI::success( $result );
