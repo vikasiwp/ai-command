@@ -150,7 +150,7 @@ class Client {
 				]
 			);
 
-			\WP_CLI::log( "Making request..." . print_r( $contents, true ) );
+//			\WP_CLI::log( "Making request..." . print_r( $contents, true ) );
 
 			$candidates = $service
 				->get_model(
@@ -182,6 +182,11 @@ class Client {
 					}
 
 					$function_result = [ 'result' => $function_result ];
+
+					$parts = new Parts();
+					$parts->add_function_call_part( $part->get_id(), $part->get_name(), $part->get_args() );
+					$new_contents[] = new Content( Content_Role::MODEL, $parts );
+
 					$parts = new Parts();
 					$parts->add_function_response_part( $part->get_id(),$part->get_name(), $function_result );
 					$content    = new Content( Content_Role::USER, $parts );
