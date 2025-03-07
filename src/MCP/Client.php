@@ -181,6 +181,7 @@ class Client {
 						$function_result = [ $function_result ];
 					}
 
+					$function_result = [ 'result' => $function_result ];
 					$parts = new Parts();
 					$parts->add_function_response_part( $part->get_id(),$part->get_name(), $function_result );
 					$content    = new Content( Content_Role::USER, $parts );
