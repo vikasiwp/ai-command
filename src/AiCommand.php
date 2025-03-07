@@ -98,14 +98,7 @@ class AiCommand extends WP_CLI_Command {
 
 		$client = new MCP\Client( $server );
 
-		$result = $client->callGemini( [
-			[
-				"role"  => "user",
-				"parts" => [
-					"text" => $args[0]
-				]
-			]
-		] );
+		$result = $client->call_ai_service_with_prompt( $args[0] );
 
 		WP_CLI::success( $result );
 	}
