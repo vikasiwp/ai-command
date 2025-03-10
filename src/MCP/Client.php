@@ -23,39 +23,40 @@ class Client {
 		$this->server = $server;
 	}
 
-	public function sendRequest( $method, $params = [] ) {
+	public function send_request( $method, $params = [] ) {
 		$request = [
 			'jsonrpc' => '2.0',
 			'method'  => $method,
 			'params'  => $params,
-			'id'      => uniqid(), // Generate a unique ID for each request
+			'id'      => uniqid( '', true ), // Generate a unique ID for each request
 		];
 
-		$requestData  = json_encode( $request );
-		$responseData = $this->server->processRequest( $requestData );
-		$response     = json_decode( $responseData, true );
+		$request_data  = json_encode( $request );
+		$response_data = $this->server->process_request( $request_data );
+		$response      = json_decode( $response_data, true );
 
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			throw new Exception( 'Invalid JSON response: ' . json_last_error_msg() );
 		}
 
 		if ( isset( $response['error'] ) ) {
-			throw new Exception( "JSON-RPC Error: " . $response['error']['message'], $response['error']['code'] );
+			throw new Exception( 'JSON-RPC Error: ' . $response['error']['message'], $response['error']['code'] );
 		}
 
 		return $response['result'];
 	}
 
-	public function __call( $name, $arguments ) { // Magic method for calling any method
-		return $this->sendRequest( $name, $arguments[0] ?? [] );
+	public function __call( $name, $arguments ) {
+		// Magic method for calling any method
+		return $this->send_request( $name, $arguments[0] ?? [] );
 	}
 
 	public function list_resources() {
-		return $this->sendRequest( 'resources/list' );
+		return $this->send_request( 'resources/list' );
 	}
 
 	public function read_resource( $uri ) {
-		return $this->sendRequest( 'resources/read', [ 'uri' => $uri ] );
+		return $this->send_request( 'resources/read', [ 'uri' => $uri ] );
 	}
 
 	// Must not have the same name as the tool, otherwise it takes precedence.
@@ -69,11 +70,11 @@ class Client {
 		);
 
 		try {
-			$service = ai_services()->get_available_service(
+			$service    = ai_services()->get_available_service(
 				[
 					'capabilities' => [
 						AI_Capability::IMAGE_GENERATION,
-					]
+					],
 				]
 			);
 			$candidates = $service
@@ -94,17 +95,17 @@ class Client {
 		$image_url = '';
 		foreach ( $candidates->get( 0 )->get_content()->get_parts() as $part ) {
 			if ( $part instanceof Inline_Data_Part ) {
-				$image_url = $part->get_base64_data(); // Data URL.
+				$image_url  = $part->get_base64_data(); // Data URL.
 				$image_blob = Helpers::base64_data_url_to_blob( $image_url );
 
 				if ( $image_blob ) {
-					$filename = tempnam("/tmp", "ai-generated-image");
-					$parts = explode( "/", $part->get_mime_type() );
+					$filename  = tempnam( '/tmp', 'ai-generated-image' );
+					$parts     = explode( '/', $part->get_mime_type() );
 					$extension = $parts[1];
-					rename( $filename, $filename . "." . $extension );
-					$filename .= "." . $extension;
+					rename( $filename, $filename . '.' . $extension );
+					$filename .= '.' . $extension;
 
-					file_put_contents($filename, $image_blob->get_binary_data() );
+					file_put_contents( $filename, $image_blob->get_binary_data() );
 
 					$image_url = $filename;
 				}
@@ -149,9 +150,9 @@ class Client {
 
 		foreach ( $capabilities['methods'] ?? [] as $tool ) {
 			$function_declarations[] = [
-				"name"        => $tool['name'],
-				"description" => $tool['description'] ?? "", // Provide a description
-				"parameters"  => $tool['inputSchema'] ?? [], // Provide the inputSchema
+				'name'        => $tool['name'],
+				'description' => $tool['description'] ?? '', // Provide a description
+				'parameters'  => $tool['inputSchema'] ?? [], // Provide the inputSchema
 			];
 		}
 
@@ -167,11 +168,11 @@ class Client {
 						AI_Capability::MULTIMODAL_INPUT,
 						AI_Capability::TEXT_GENERATION,
 						AI_Capability::FUNCTION_CALLING,
-					]
+					],
 				]
 			);
 
-//			\WP_CLI::log( "Making request..." . print_r( $contents, true ) );
+			\WP_CLI::log( 'Making request...' . print_r( $contents, true ) );
 
 			$candidates = $service
 				->get_model(
@@ -190,12 +191,12 @@ class Client {
 			$text = '';
 			foreach ( $candidates->get( 0 )->get_content()->get_parts() as $part ) {
 				if ( $part instanceof Text_Part ) {
-					if ( $text !== '' ) {
+					if ( '' !== $text ) {
 						$text .= "\n\n";
 					}
 					$text .= $part->get_text();
 				} elseif ( $part instanceof Function_Call_Part ) {
-					var_dump('call function', $part);
+					var_dump( 'call function', $part );
 					$function_result = $this->{$part->get_name()}( $part->get_args() );
 
 					// Odd limitation of add_function_response_part().
@@ -210,8 +211,8 @@ class Client {
 					$new_contents[] = new Content( Content_Role::MODEL, $parts );
 
 					$parts = new Parts();
-					$parts->add_function_response_part( $part->get_id(),$part->get_name(), $function_result );
-					$content    = new Content( Content_Role::USER, $parts );
+					$parts->add_function_response_part( $part->get_id(), $part->get_name(), $function_result );
+					$content        = new Content( Content_Role::USER, $parts );
 					$new_contents[] = $content;
 				}
 			}

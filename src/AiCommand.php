@@ -2,7 +2,6 @@
 
 namespace WP_CLI\AiCommand;
 
-use Exception;
 use WP_CLI;
 use WP_CLI_Command;
 
@@ -45,73 +44,95 @@ class AiCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$server = new MCP\Server();
 
-		$server->registerTool( [
-			'name'        => 'calculate_total',
-			'description' => 'Calculates the total price.',
-			'inputSchema' => [
-				'type'       => 'object',
-				'properties' => [
-					'price'    => [ 'type' => 'integer', 'description' => 'The price of the item.' ],
-					'quantity' => [ 'type' => 'integer', 'description' => 'The quantity of items.' ],
+		$server->register_tool(
+			[
+				'name'        => 'calculate_total',
+				'description' => 'Calculates the total price.',
+				'inputSchema' => [
+					'type'       => 'object',
+					'properties' => [
+						'price'    => [
+							'type'        => 'integer',
+							'description' => 'The price of the item.',
+						],
+						'quantity' => [
+							'type'        => 'integer',
+							'description' => 'The quantity of items.',
+						],
+					],
+					'required'   => [ 'price', 'quantity' ],
 				],
-				'required'   => [ 'price', 'quantity' ],
-			],
-			'callable'    => function ( $params ) {
-				$price    = $params['price'] ?? 0;
-				$quantity = $params['quantity'] ?? 1;
+				'callable'    => function ( $params ) {
+					$price    = $params['price'] ?? 0;
+					$quantity = $params['quantity'] ?? 1;
 
-				return $price * $quantity;
-			},
-		] );
+					return $price * $quantity;
+				},
+			]
+		);
 
-		$server->registerTool( [
-			'name'        => 'greet',
-			'description' => 'Greets the user.',
-			'inputSchema' => [
-				'type'       => 'object',
-				'properties' => [
-					'name' => [ 'type' => 'string', 'description' => 'The name of the user.' ],
+		$server->register_tool(
+			[
+				'name'        => 'greet',
+				'description' => 'Greets the user.',
+				'inputSchema' => [
+					'type'       => 'object',
+					'properties' => [
+						'name' => [
+							'type'        => 'string',
+							'description' => 'The name of the user.',
+						],
+					],
+					'required'   => [ 'name' ],
 				],
-				'required'   => [ 'name' ],
-			],
-			'callable'    => function ( $params ) {
-				return "Hello, " . $params['name'] . "!";
-			},
-		] );
+				'callable'    => function ( $params ) {
+					return 'Hello, ' . $params['name'] . '!';
+				},
+			]
+		);
 
 		// Register resources:
-		$server->registerResource( [
-			'name'        => 'users',
-			'uri'         => 'data://users',
-			'description' => 'List of users',
-			'mimeType'    => 'application/json',
-			'dataKey'     => 'users', // This tells getResourceData() to look in the $data array
-		] );
+		$server->register_resource(
+			[
+				'name'        => 'users',
+				'uri'         => 'data://users',
+				'description' => 'List of users',
+				'mimeType'    => 'application/json',
+				'dataKey'     => 'users', // This tells getResourceData() to look in the $data array
+			]
+		);
 
-		$server->registerResource( [
-			'name'        => 'product_catalog',
-			'uri'         => 'file://./products.json',
-			'description' => 'Product catalog',
-			'mimeType'    => 'application/json',
-			'filePath'    => './products.json', // This tells getResourceData() to read from a file
-		] );
+		$server->register_resource(
+			[
+				'name'        => 'product_catalog',
+				'uri'         => 'file://./products.json',
+				'description' => 'Product catalog',
+				'mimeType'    => 'application/json',
+				'filePath'    => './products.json', // This tells getResourceData() to read from a file
+			]
+		);
 
 		$client = new MCP\Client( $server );
 
-		$server->registerTool( [
-			'name'        => 'generate_image',
-			'description' => 'Generates an image.',
-			'inputSchema' => [
-				'type'       => 'object',
-				'properties' => [
-					'prompt' => [ 'type' => 'string', 'description' => 'The prompt for generating the image.' ],
+		$server->register_tool(
+			[
+				'name'        => 'generate_image',
+				'description' => 'Generates an image.',
+				'inputSchema' => [
+					'type'       => 'object',
+					'properties' => [
+						'prompt' => [
+							'type'        => 'string',
+							'description' => 'The prompt for generating the image.',
+						],
+					],
+					'required'   => [ 'prompt' ],
 				],
-				'required'   => [ 'prompt' ],
-			],
-			'callable'    => function ( $params ) use ( $client ) {
-				return $client->get_image_from_ai_service( $params['prompt'] );
-			},
-		] );
+				'callable'    => function ( $params ) use ( $client ) {
+					return $client->get_image_from_ai_service( $params['prompt'] );
+				},
+			]
+		);
 
 		$result = $client->call_ai_service_with_prompt( $args[0] );
 
