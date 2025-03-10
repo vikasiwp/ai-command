@@ -6,13 +6,12 @@
     "license": "MIT",
     "authors": [],
     "require": {
-        "gemini-api-php/client": "^1.7",
-        "logiscape/mcp-sdk-php": "^1.0",
-        "symfony/http-client": "^7.2",
+        "php": "^8.2",
         "wp-cli/wp-cli": "^2.12"
     },
     "require-dev": {
-        "wp-cli/wp-cli-tests": "^v4.3.6"
+      "roave/security-advisories": "dev-latest",
+      "wp-cli/wp-cli-tests": "^v4.3.9"
     },
     "config": {
         "process-timeout": 7200,
@@ -48,6 +47,7 @@
         "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
+        "phpcbf": "run-phpcbf-cleanup",
         "phpunit": "run-php-unit-tests",
         "prepare-tests": "install-package-tests",
         "test": [
