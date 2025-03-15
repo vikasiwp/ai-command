@@ -46,8 +46,9 @@ class AiCommand extends WP_CLI_Command {
 		$server = new MCP\Server();
 
 		$map_rest_to_mcp = new MapRESTtoMCP(
-			new WP_CLI\AiCommand\RESTControllerList\Whitelist()
+			require __DIR__ . '/../settings/rest-routes.php'
 		);
+
 		$map_rest_to_mcp->map_rest_to_mcp( $server );
 
 		$server->register_tool(
