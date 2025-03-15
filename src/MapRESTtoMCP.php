@@ -113,7 +113,11 @@ class MapRESTtoMCP {
 		preg_match( '/\(?P<([a-z]+)>/', $route, $matches );
 
 		if ( isset( $matches[1] ) && isset( $inputs[ $matches[1] ] ) ) {
-			$route = preg_replace('/(\(\?P<.*?\))/', $inputs[$matches[1]], $route, 1);
+			$route = preg_replace( '/(\(\?P<'.$matches[1].'>.*?\))/', $inputs[ $matches[1] ], $route, 1 );
+		}
+
+		if ( isset( $matches[2] ) && isset( $inputs[ $matches[2] ] ) ) {
+			$route = preg_replace( '/(\(\?P<'.$matches[2].'\))/', $inputs[ $matches[1] ], $route, 1 );
 		}
 
 		\WP_CLI::debug( 'Rest Route: ' . $route . ' ' . $method_name, 'mcp_server' );

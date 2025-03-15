@@ -27,4 +27,8 @@ return [
 		'POST'   => 'Update a specific user by ID.',
 		'DELETE' => 'Delete a specific user by ID.',
 	],
+	'/wp/v2/pages/(?P<parent>[\\d]+)/revisions/(?P<id>[\\d]+)' => [
+		'GET'  => 'Get a list of revisions for a specific page.',
+		'POST' => 'Create a new revision for a specific page.',
+	],
 ];
