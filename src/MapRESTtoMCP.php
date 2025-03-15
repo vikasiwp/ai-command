@@ -9,7 +9,7 @@ use WP_REST_Request;
 class MapRESTtoMCP {
 
     public function __construct(
-        private AllowedList $whitelist,
+        private AllowedList $allowed_list
     ) {}
 
 	public function args_to_schema( $args = [] ) {
@@ -70,7 +70,7 @@ class MapRESTtoMCP {
 	}
 
 	public function map_rest_to_mcp( Server $mcp_server ) {
-		$allowed_list = $this->whitelist->get();
+		$allowed_list = $this->allowed_list->get();
 
 		$server = rest_get_server();
 		$routes = $server->get_routes();
