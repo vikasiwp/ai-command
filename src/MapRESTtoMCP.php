@@ -8,22 +8,29 @@ class MapRESTtoMCP {
 		$this->rest_api_routes = include( 'RESTControllerList.php' );
 	}
 
-	public function args_to_schema( $args ) {
+	public function args_to_schema( $args = [] ) {
 		$schema = [];
+
+		if ( empty( $args ) ) {
+			return [];
+		}
 		foreach ( $args as $title => $arg ) {
+			$description = $arg['description'] ?? $title;
+			$type 		 = $arg['type'] ?? 'string';
+
 			$schema[ $title ] = [
-				'type' => $arg['type'],
-				'description' => $arg['description'],
+				'type' => $type,
+				'description' => $description,
 			];
 		}
 		return $schema;
 	}
 
-	public function get_endpoint_description( $endpoint ) {
-		return str_replace( '/wp/v2/', '', $endpoint );
+	public function get_endpoint_description( $route ) {
+		return str_replace( '/wp/v2/', '', $route );
 	}
 
-	public function map_rest_to_mcp() {
+	public function map_rest_to_mcp( $server) {
         $routes = rest_get_server()->get_routes();
 		foreach ( $routes as $route => $endpoints ) {
 			foreach ( $endpoints as $endpoint ) {
@@ -33,7 +40,7 @@ class MapRESTtoMCP {
 
 				$server->register_tool( [
 					'name' => $tool_name,
-					'description' => $this->get_endpoint_description( $endpoint ),
+					'description' => $this->get_endpoint_description( $route ),
 					'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 					'callable' => function ( $inputs ) use ( $endpoint, $route ){
 						$request = new \WP_REST_Request( pick_method( $endpoint['methods'] ), $route );

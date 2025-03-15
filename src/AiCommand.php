@@ -47,6 +47,8 @@ class AiCommand extends WP_CLI_Command {
 
 		require_once( 'MapRESTtoMCP.php' );
 		$map_rest_to_mcp = new MapRESTtoMCP();
+		$map_rest_to_mcp->map_rest_to_mcp( $server );
+		return;
 		
 		global $wp_rest_server;
 
