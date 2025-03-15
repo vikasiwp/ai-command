@@ -18,6 +18,22 @@ use WP_CLI_Command;
  * Servers provide context, tools, and prompts to clients
  */
 class AiCommand extends WP_CLI_Command {
+
+	public function args_to_schema( $args ) {
+		$schema = [];
+		foreach ( $args as $title => $arg ) {
+			$schema[ $title ] = [
+				'type' => $arg['type'],
+				'description' => $arg['description'],
+			];
+		}
+		return $schema;
+	}
+
+	public function get_endpoint_description( $endpoint ) {
+		return str_replace( '/wp/v2/', '', $endpoint );
+	}
+
 	/**
 	 * Greets the world.
 	 *
@@ -44,8 +60,99 @@ class AiCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$server = new MCP\Server();
 
+		require_once( 'MapRESTtoMCP.php' );
+		$map_rest_to_mcp = new MapRESTtoMCP();
+		
+		global $wp_rest_server;
 
+		if (empty($wp_rest_server)) {
+			$wp_rest_server = rest_get_server();
+		}
 
+		$routes = $wp_rest_server->get_routes();
+		$controllers = [];
+
+		include_once( 'RESTControllerList.php' );
+		// Assume $rest_api_routes is the structured array defined above
+		foreach ($rest_api_routes as $controller => $routes) {
+			foreach ($routes as $route => $methods) {
+				foreach ($methods as $http_method => $description) {
+
+					// Generate a tool name based on route and method (e.g., "GET_/wp/v2/posts")
+					$tool_name = strtolower($http_method . '_' . str_replace(['/', '(', ')', '?', '[', ']', '+', '\\', '<', '>', ':', '-'], '_', $route));
+					$tool_name = preg_replace('/_+/', '_', trim($tool_name, '_'));
+
+					// Fetch the endpoint schema dynamically
+					$request = new \WP_REST_Request('OPTIONS', $route);
+					$rest_server  = rest_get_server();
+					$response = $rest_server->dispatch($request);
+					$schema = $response->get_data()['endpoints'][0]['args'] ?? [];
+
+					// Build inputSchema from retrieved schema
+					$inputSchema = [
+						'type' => 'object',
+						'properties' => [],
+						'required' => [],
+					];
+
+					foreach ($schema as $arg_name => $arg_details) {
+						$inputSchema['properties'][$arg_name] = [
+							'type' => isset($arg_details['type']) ? $arg_details['type'] : 'string',
+							'description' => isset($arg_details['description']) ? $arg_details['description'] : '',
+						];
+
+						if (!empty($arg_details['required'])) {
+							$inputSchema['required'][] = $arg_name;
+						}
+					}
+
+					// Closure to handle the callable action
+					$callable = function ($params) use ($http_method, $route) {
+						$request = new \WP_REST_Request($http_method, $route);
+
+						if ($http_method === 'GET') {
+							$request->set_query_params($params);
+						} else {
+							$request->set_body_params($params);
+						}
+
+						$rest_server = rest_get_server();
+						$response = $rest_server->dispatch($request);
+						return $response->get_data();
+					};
+
+					// Register the tool
+					$server->register_tool([
+						'name' => $tool_name,
+						'description' => $description,
+						'inputSchema' => $inputSchema,
+						'callable' => $callable,
+					]);
+				}
+			}
+		}
+
+		
+		// foreach ($routes as $route => $handlers) {
+		// 	if ( $route === '/wp/v2/posts' ) {
+		// 		foreach ($handlers as $handler) { 
+		// 			$methods   = isset($handler['methods']) ? $handler['methods'] : 'unknown';
+		// 			$args      = isset($handler['args']) ? $handler['args'] : [];
+		// 			$callback  = isset($handler['callback']) ? $handler['callback'] : 'unknown';
+
+		// 			$controllers[ $route ] = [
+		// 				'namespace' => $namespace,
+		// 				'methods'   => $methods,
+		// 				'args'      => $args,
+		// 				'callback'  => $callback,
+		// 			];
+		// 		}
+		// 	}
+		// }
+
+		// print_r( $controllers );
+		// return;
+		
 		$server->register_tool(
 			[
 				'name' => 'create_post',
@@ -69,13 +176,17 @@ class AiCommand extends WP_CLI_Command {
 					'required' => [ 'title', 'content' ],
 				],
 				'callable' => function ( $params ) {
-					$post_id = wp_insert_post( [
-						'post_title' => $params['title'],
-						'post_content' => $params['content'],
-						'post_category' => [ $params['category'] ],
-						'post_status' => 'publish',
+					$request = new \WP_REST_Request( 'POST', '/wp/v2/posts' );
+					$request->set_body_params( [
+						'title'      => $params['title'],
+						'content'    => $params['content'],
+						'categories' => [ $params['category'] ],
+						'status'     => 'publish',
 					] );
-					return get_permalink( $post_id );
+					$controller = new \WP_REST_Posts_Controller( 'post' );
+					$response   = $controller->create_item( $request );
+					$data       = $response->get_data();
+					return $data;
 				},
 			]
 		);
