@@ -38,17 +38,23 @@ class MapRESTtoMCP {
 				$tool_name = strtolower( str_replace(['/', '(', ')', '?', '[', ']', '+', '\\', '<', '>', ':', '-'], '_', $route ) );
 				$tool_name = preg_replace('/_+/', '_', trim($tool_name, '_'));
 
-				$server->register_tool( [
-					'name' => $tool_name,
-					'description' => $this->get_endpoint_description( $route ),
-					'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
-					'callable' => function ( $inputs ) use ( $endpoint, $route ){
-						$request = new \WP_REST_Request( pick_method( $endpoint['methods'] ), $route );
-						$request->set_body_params( $inputs );
-						$response = rest_get_server()->dispatch( $request );
-						return rest_get_server()->response_to_data( $response );
-					},
-				] );
+
+				foreach( $endpoint['methods'] as $method ) {
+					$server->register_tool( [
+						'name' => $tool_name,
+						'description' => $this->get_endpoint_description( $route ),
+						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
+						'callable' => function ( $inputs ) use ( $endpoint, $route, $method ){
+							$request = new \WP_REST_Request( $method, $route );
+							$request->set_body_params( $inputs );
+							$response = rest_get_server()->dispatch( $request );
+
+                            // TODO $embed parameter is forced to true now
+                            return rest_get_server()->response_to_data( $response, true );
+						},
+					] );
+				}
+
 			}
 		}
 	}

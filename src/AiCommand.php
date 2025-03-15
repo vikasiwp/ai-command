@@ -48,10 +48,6 @@ class AiCommand extends WP_CLI_Command {
 		$map_rest_to_mcp = new MapRESTtoMCP();
 		$map_rest_to_mcp->map_rest_to_mcp( $server );
 
-		print_r( $server->list_resources() );
-
-		return;
-
 		$server->register_tool(
 			[
 				'name' => 'create_post',
