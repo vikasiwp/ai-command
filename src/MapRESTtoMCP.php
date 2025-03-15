@@ -3,7 +3,6 @@
 namespace WP_CLI\AiCommand;
 
 use WP_CLI\AiCommand\MCP\Server;
-use WP_CLI\AiCommand\RESTControllerList\AllowedList;
 use WP_REST_Request;
 
 class MapRESTtoMCP {
@@ -94,6 +93,12 @@ class MapRESTtoMCP {
 						'description' => $this->rest_routes[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
+
+							\WP_CLI::debug( 'Rest Route: ' . $route . ' ' . $method_name, 'mcp_server' );
+							foreach( $inputs as $key => $value ) {
+								\WP_CLI::debug( '  param->' . $key . ' : ' . $value, 'mcp_server' );
+							}
+
 							$request = new WP_REST_Request( $method_name, $route  );
 							$request->set_body_params( $inputs );
 

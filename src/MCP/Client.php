@@ -128,6 +128,7 @@ class Client {
 	}
 
 	public function call_ai_service_with_prompt( string $prompt ) {
+		\WP_CLI::debug( "Prompt: {$prompt}", 'mcp_server' );
 		$parts = new Parts();
 		$parts->add_text_part( $prompt );
 		$content = new Content( Content_Role::USER, $parts );
@@ -172,7 +173,7 @@ class Client {
 				]
 			);
 
-			\WP_CLI::log( 'Making request...' . print_r( $contents, true ) );
+			\WP_CLI::debug( print_r($contents, true), 'mcp_server_raw' );
 
 			$candidates = $service
 				->get_model(
@@ -196,7 +197,6 @@ class Client {
 					}
 					$text .= $part->get_text();
 				} elseif ( $part instanceof Function_Call_Part ) {
-					var_dump( 'call function', $part );
 					$function_result = $this->{$part->get_name()}( $part->get_args() );
 
 					// Odd limitation of add_function_response_part().
