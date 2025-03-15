@@ -9,7 +9,7 @@ use WP_REST_Request;
 class MapRESTtoMCP {
 
     public function __construct(
-        private AllowedList $allowed_list
+        private array $rest_routes
     ) {}
 
 	public function args_to_schema( $args = [] ) {
@@ -70,15 +70,13 @@ class MapRESTtoMCP {
 	}
 
 	public function map_rest_to_mcp( Server $mcp_server ) {
-		$allowed_list = $this->allowed_list->get();
-
 		$server = rest_get_server();
 		$routes = $server->get_routes();
 
         foreach ( $routes as $route => $endpoints ) {
 			foreach ( $endpoints as $endpoint ) {
 				// Only allowed routes
-				if ( ! isset( $allowed_list[ $route ] ) ) {
+				if ( ! isset( $this->rest_routes[ $route ] ) ) {
 					continue;
 				}
 
@@ -87,13 +85,13 @@ class MapRESTtoMCP {
 
 				foreach( $endpoint['methods'] as $method_name => $enabled ) {
 					// Only allowed methods
-					if ( ! isset( $allowed_list[ $route ][ $method_name ] ) ) {
+					if ( ! isset( $this->rest_routes[ $route ][ $method_name ] ) ) {
 						continue;
 					}
 
 					$tool = [
 						'name' => $tool_name . '_' . strtolower( $method_name ),
-						'description' => $allowed_list[ $route ][ $method_name ],
+						'description' => $this->rest_routes[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
 							$request = new WP_REST_Request( $method_name, $route  );
