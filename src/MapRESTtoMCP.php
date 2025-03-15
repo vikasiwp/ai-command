@@ -17,11 +17,14 @@ class MapRESTtoMCP {
 			$type 		 = $arg['type'] ?? 'string';
 
 			$schema[ $title ] = [
-				'type' => $type,
+				'type' => $type, // TODO can be array.
 				'description' => $description,
 			];
 		}
-		return $schema;
+		return [
+			'type' => 'object',
+			'properties' => $schema
+		];
 	}
 
 	public function get_endpoint_description( $route ) {
@@ -50,7 +53,7 @@ class MapRESTtoMCP {
 					}
 
 					$server->register_tool( [
-						'name' => $tool_name,
+						'name' => $tool_name . '_' . strtolower( $method_name ),
 						'description' => $whitelist[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $endpoint, $route, $method_name ){
