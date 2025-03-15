@@ -50,15 +50,14 @@ class MapRESTtoMCP {
 				}
 
 				// Generate a tool name based on route and method (e.g., "GET_/wp/v2/posts")
-				$tool_name = strtolower( str_replace(['/', '(', ')', '?', '[', ']', '+', '\\', '<', '>', ':', '-'], '_', $route ) );
-				$tool_name = preg_replace('/_+/', '_', trim($tool_name, '_'));
+				$tool_name = sanitize_key($route);
 
 				foreach( $endpoint['methods'] as $method_name => $enabled ) {
 					if ( ! isset( $whitelist[ $route ][ $method_name ] ) ) {
 						continue; // Method not whitelisted.
 					}
 
-					$server->register_tool( [
+					$tool = [
 						'name' => $tool_name . '_' . strtolower( $method_name ),
 						'description' => $whitelist[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
@@ -66,12 +65,14 @@ class MapRESTtoMCP {
 							$request = new WP_REST_Request( $method_name, $route );
 							$request->set_body_params( $inputs );
 
-                            $response = rest_get_server()->dispatch( $request );
+							$response = rest_get_server()->dispatch( $request );
 
-                            // TODO $embed parameter is forced to true now
-                            return rest_get_server()->response_to_data( $response, true );
+							// TODO $embed parameter is forced to true now
+							return rest_get_server()->response_to_data( $response, true );
 						},
-					] );
+					];
+
+					$server->register_tool( $tool);
 				}
 
 			}
