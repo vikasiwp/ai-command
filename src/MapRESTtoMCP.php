@@ -6,6 +6,10 @@ use WP_CLI\AiCommand\RESTControllerList\Whitelist;
 
 class MapRESTtoMCP {
 
+    public function __construct(
+        private WhiteList $whitelist,
+    ) {}
+
 	public function args_to_schema( $args = [] ) {
 		$schema = [];
 
@@ -29,7 +33,7 @@ class MapRESTtoMCP {
 	}
 
 	public function map_rest_to_mcp( $server ) {
-		$whitelist = (new Whitelist())->get();
+		$whitelist = $this->whitelist->get();
 
 		$routes = rest_get_server()->get_routes();
 		foreach ( $routes as $route => $endpoints ) {
