@@ -2,14 +2,9 @@
 
 namespace WP_CLI\AiCommand;
 
-use WP_REST_Request;
+use WP_CLI\AiCommand\RESTControllerList\Whitelist;
 
 class MapRESTtoMCP {
-
-	public function __construct(
-        private array $rest_api_routes
-    ) {
-	}
 
 	public function args_to_schema( $args = [] ) {
 		$schema = [];
@@ -33,22 +28,32 @@ class MapRESTtoMCP {
 		return str_replace( '/wp/v2/', '', $route );
 	}
 
-	public function map_rest_to_mcp( $server) {
-        $routes = rest_get_server()->get_routes();
+	public function map_rest_to_mcp( $server ) {
+		$whitelist = (new Whitelist())->get();
 
-        foreach ( $routes as $route => $endpoints ) {
+		$routes = rest_get_server()->get_routes();
+		foreach ( $routes as $route => $endpoints ) {
 			foreach ( $endpoints as $endpoint ) {
+				if ( ! isset( $whitelist[ $route ] ) ) {
+					continue; // Route not whitelisted.
+				}
+
 				// Generate a tool name based on route and method (e.g., "GET_/wp/v2/posts")
 				$tool_name = strtolower( str_replace(['/', '(', ')', '?', '[', ']', '+', '\\', '<', '>', ':', '-'], '_', $route ) );
 				$tool_name = preg_replace('/_+/', '_', trim($tool_name, '_'));
 
-				foreach( $endpoint['methods'] as $method ) {
+				foreach( $endpoint['methods'] as $method_name => $enabled ) {
+					if ( ! isset( $whitelist[ $route ][ $method_name ] ) ) {
+						continue; // Method not whitelisted.
+					}
+
 					$server->register_tool( [
 						'name' => $tool_name,
-						'description' => $this->get_endpoint_description( $route ),
+						'description' => $whitelist[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
-						'callable' => function ( $inputs ) use ( $route, $method ){
-							$request = new WP_REST_Request( $method, $route );
+
+						'callable' => function ( $inputs ) use ( $route, $method_name ){
+							$request = new \WP_REST_Request( $method_name, $route );
 							$request->set_body_params( $inputs );
 
                             $response = rest_get_server()->dispatch( $request );
