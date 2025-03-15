@@ -122,7 +122,7 @@ class Client {
 
 		// See https://github.com/felixarntz/ai-services/blob/main/docs/Accessing-AI-Services-in-PHP.md for further processing.
 
-		WP_CLI::log( "Generated image: $image_url" );
+		WP_CLI::debug( "Generated image: $image_url", 'ai' );
 
 		return $image_url;
 	}
@@ -172,7 +172,7 @@ class Client {
 				]
 			);
 
-		  \WP_CLI::log( 'Making request...' . print_r( $contents, true ) );
+		  \WP_CLI::debug( 'Making request...' . print_r( $contents, true ), 'ai' );
 
 			if ( $service->get_service_slug() === 'openai' ) {
 				$model = 'gpt-4o';
