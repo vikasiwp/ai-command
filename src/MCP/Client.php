@@ -172,12 +172,19 @@ class Client {
 				]
 			);
 
-			\WP_CLI::log( 'Making request...' . print_r( $contents, true ) );
+		  \WP_CLI::log( 'Making request...' . print_r( $contents, true ) );
+
+			if ( $service->get_service_slug() === 'openai' ) {
+				$model = 'gpt-4o';
+			} else {
+				$model = 'gemini-2.0-flash';
+			}
 
 			$candidates = $service
 				->get_model(
 					[
 						'feature'      => 'text-generation',
+						'model'        => $model,
 						'tools'        => $tools,
 						'capabilities' => [
 							AI_Capability::MULTIMODAL_INPUT,
@@ -196,7 +203,6 @@ class Client {
 					}
 					$text .= $part->get_text();
 				} elseif ( $part instanceof Function_Call_Part ) {
-					var_dump( 'call function', $part );
 					$function_result = $this->{$part->get_name()}( $part->get_args() );
 
 					// Odd limitation of add_function_response_part().
@@ -221,7 +227,15 @@ class Client {
 				return $this->call_ai_service( $new_contents );
 			}
 
-			return $text;
+			// Keep the session open to continue chatting.
+
+			$response = \cli\prompt( 'Continue' );
+
+			$parts = new Parts();
+			$parts->add_text_part( $response );
+			$content        = new Content( Content_Role::USER, $parts );
+			$new_contents[] = $content;
+			return $this->call_ai_service( $new_contents );
 		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
