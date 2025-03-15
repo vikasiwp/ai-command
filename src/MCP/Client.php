@@ -229,6 +229,8 @@ class Client {
 
 			// Keep the session open to continue chatting.
 
+			WP_CLI::line( $text );
+
 			$response = \cli\prompt( 'Continue' );
 
 			$parts = new Parts();
