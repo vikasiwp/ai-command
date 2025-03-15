@@ -172,9 +172,9 @@ class Client {
 				]
 			);
 
-//			\WP_CLI::log( 'Making request...' . print_r( $contents, true ) );
+		  \WP_CLI::log( 'Making request...' . print_r( $contents, true ) );
 
-			if( $service->get_service_slug() === 'openai' ) {
+			if ( $service->get_service_slug() === 'openai' ) {
 				$model = 'gpt-4o';
 			} else {
 				$model = 'gemini-2.0-flash';
@@ -203,7 +203,6 @@ class Client {
 					}
 					$text .= $part->get_text();
 				} elseif ( $part instanceof Function_Call_Part ) {
-//					var_dump( 'call function', $part );
 					$function_result = $this->{$part->get_name()}( $part->get_args() );
 
 					// Odd limitation of add_function_response_part().
