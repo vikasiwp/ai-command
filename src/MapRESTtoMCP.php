@@ -98,17 +98,7 @@ class MapRESTtoMCP {
 						'description' => $this->rest_routes[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
-							preg_match( '/\(?P<([a-z]+)>/', $route, $matches );
-							if ( isset( $matches[1] ) && isset( $inputs[ $matches[1] ] ) ) {
-								$route = preg_replace( '/(\(\?P<.*?\))/', $inputs[ $matches[1] ], $route, 1 );
-							}
-
-							$request = new WP_REST_Request( $method_name, $route  );
-							$request->set_body_params( $inputs );
-
-							$response = $server->dispatch( $request );
-
-							return $server->response_to_data( $response, true );
+							$this->rest_callable( $inputs, $route, $method_name, $server );
 						},
 					];
 
@@ -117,5 +107,26 @@ class MapRESTtoMCP {
 
 			}
 		}
+	}
+
+	protected function rest_callable( $inputs, $route, $method_name, $server ) {
+		preg_match( '/\(?P<([a-z]+)>/', $route, $matches );
+
+		if ( isset( $matches[1] ) && isset( $inputs[ $matches[1] ] ) ) {
+			$route = preg_replace('/(\(\?P<.*?\))/', $inputs[$matches[1]], $route, 1);
+		}
+
+		\WP_CLI::debug( 'Rest Route: ' . $route . ' ' . $method_name, 'mcp_server' );
+		foreach( $inputs as $key => $value ) {
+			\WP_CLI::debug( '  param->' . $key . ' : ' . $value, 'mcp_server' );
+		}
+
+		$request = new WP_REST_Request( $method_name, $route  );
+		$request->set_body_params( $inputs );
+
+		$response = $server->dispatch( $request );
+
+		// TODO $embed parameter is forced to true now
+		return $server->response_to_data( $response, true );
 	}
 }
