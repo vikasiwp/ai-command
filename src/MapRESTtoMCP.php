@@ -8,6 +8,21 @@ class MapRESTtoMCP {
 		$this->rest_api_routes = include( 'RESTControllerList.php' );
 	}
 
+	public function args_to_schema( $args ) {
+		$schema = [];
+		foreach ( $args as $title => $arg ) {
+			$schema[ $title ] = [
+				'type' => $arg['type'],
+				'description' => $arg['description'],
+			];
+		}
+		return $schema;
+	}
+
+	public function get_endpoint_description( $endpoint ) {
+		return str_replace( '/wp/v2/', '', $endpoint );
+	}
+
 	public function map_rest_to_mcp() {
         $routes = rest_get_server()->get_routes();
 		foreach ( $routes as $route => $endpoints ) {

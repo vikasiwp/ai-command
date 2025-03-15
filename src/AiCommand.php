@@ -19,21 +19,6 @@ use WP_CLI_Command;
  */
 class AiCommand extends WP_CLI_Command {
 
-	public function args_to_schema( $args ) {
-		$schema = [];
-		foreach ( $args as $title => $arg ) {
-			$schema[ $title ] = [
-				'type' => $arg['type'],
-				'description' => $arg['description'],
-			];
-		}
-		return $schema;
-	}
-
-	public function get_endpoint_description( $endpoint ) {
-		return str_replace( '/wp/v2/', '', $endpoint );
-	}
-
 	/**
 	 * Greets the world.
 	 *
