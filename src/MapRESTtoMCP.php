@@ -99,6 +99,13 @@ class MapRESTtoMCP {
 						'description' => $this->rest_routes[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
+							preg_match( '/\(?P<([a-z]+)>/', $route, $matches );
+							echo "Route: " . $route . PHP_EOL;
+							if ( isset( $matches[1] ) && isset( $inputs[ $matches[1] ] ) ) {
+								$route = preg_replace( '/(\(\?P<.*?\))/', $inputs[ $matches[1] ], $route, 1 );
+							}
+							echo "Route: " . $route . PHP_EOL;
+
 							$request = new WP_REST_Request( $method_name, $route  );
 							$request->set_body_params( $inputs );
 
