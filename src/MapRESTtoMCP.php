@@ -3,7 +3,6 @@
 namespace WP_CLI\AiCommand;
 
 use WP_CLI\AiCommand\MCP\Server;
-use WP_CLI\AiCommand\RESTControllerList\AllowedList;
 use WP_REST_Request;
 
 class MapRESTtoMCP {
@@ -109,10 +108,8 @@ class MapRESTtoMCP {
 
 							$response = $server->dispatch( $request );
 
-							// TODO $embed parameter is forced to true now
 							return $server->response_to_data( $response, true );
 						},
-						'required' => ['id'], // TODO
 					];
 
 					$mcp_server->register_tool($tool);
