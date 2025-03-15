@@ -21,7 +21,7 @@ return [
 		'GET'  => 'Retrieve a list of users.',
 		'POST' => 'Create a new user.',
 	],
-	'/wp/v2/users/id' => [
+	'/wp/v2/users/(?P<id>[\\d]+)' => [
 		'GET'    => 'Retrieve a specific user by ID.',
 		'POST'   => 'Update a specific user by ID.',
 		'DELETE' => 'Delete a specific user by ID.',

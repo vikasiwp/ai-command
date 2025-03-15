@@ -98,16 +98,14 @@ class MapRESTtoMCP {
 						'name' => $tool_name . '_' . strtolower( $method_name ),
 						'description' => $this->rest_routes[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
-						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
+						'callable' => function ( $inputs ) use ( $route, $method_name, $server ) {
 							$request = new WP_REST_Request( $method_name, $route  );
 							$request->set_body_params( $inputs );
 
 							$response = $server->dispatch( $request );
 
-							// TODO $embed parameter is forced to true now
 							return $server->response_to_data( $response, true );
 						},
-						'required' => ['id'], // TODO
 					];
 
 					$mcp_server->register_tool($tool);
