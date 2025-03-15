@@ -3,13 +3,13 @@
 namespace WP_CLI\AiCommand;
 
 use WP_CLI\AiCommand\MCP\Server;
-use WP_CLI\AiCommand\RESTControllerList\Whitelist;
+use WP_CLI\AiCommand\RESTControllerList\AllowedList;
 use WP_REST_Request;
 
 class MapRESTtoMCP {
 
     public function __construct(
-        private WhiteList $whitelist,
+        private AllowedList $whitelist,
     ) {}
 
 	public function args_to_schema( $args = [] ) {
@@ -105,7 +105,9 @@ class MapRESTtoMCP {
 							return $server->response_to_data( $response, true );
 						},
 						'required' => ['id'], // TODO
-					] );
+					];
+
+					$mcp_server->register_tool($tool);
 				}
 
 			}

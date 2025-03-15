@@ -2,9 +2,9 @@
 
 namespace WP_CLI\AiCommand\RESTControllerList;
 
-class Whitelist {
+class AllowedList {
 
-	protected array $proof_of_concept_whitelist = array(
+	protected array $allowed_list = array(
 		'/wp/v2/pages' =>  array(
 			'GET'  => 'Get a list of pages',
 			'POST' => 'Create a new page'
@@ -19,9 +19,8 @@ class Whitelist {
 		),
 	);
 
-	public function __construct() {}
-
-	public function get() {
-		return $this->proof_of_concept_whitelist;
+	public function get() : array {
+		return $this->allowed_list;
 	}
+
 }

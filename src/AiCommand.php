@@ -46,7 +46,7 @@ class AiCommand extends WP_CLI_Command {
 		$server = new MCP\Server();
 
 		$map_rest_to_mcp = new MapRESTtoMCP(
-			new WP_CLI\AiCommand\RESTControllerList\Whitelist()
+			new WP_CLI\AiCommand\RESTControllerList\AllowedList()
 		);
 		$map_rest_to_mcp->map_rest_to_mcp( $server );
 
