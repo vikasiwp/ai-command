@@ -22,6 +22,6 @@ class Whitelist {
 	public function __construct() {}
 
 	public function get() {
-		return $this->proof_of_concept_whitelist;
+		return \apply_filters('mcp_allow_list_endpoints',$this->proof_of_concept_whitelist);
 	}
 }

@@ -105,7 +105,7 @@ class MapRESTtoMCP {
 							return $server->response_to_data( $response, true );
 						},
 						'required' => ['id'], // TODO
-					] );
+					];
 				}
 
 			}
