@@ -41,15 +41,15 @@ class MapRESTtoMCP {
 	}
 
 	protected function sanitize_type( $type) {
-		// Validated types:
-		if ( $type === 'string' || $type === 'integer' || $type === 'boolean' ) {
+		if ( in_array( $type, [ 'string', 'integer' , 'boolean'], true ) ) {
 			return $type;
 		}
 
-		if ( $type === 'array' || $type === 'object' ) {
-			return 'string'; // TODO, better solution.
+		if ( in_array( $type, [ 'array', 'object' ], true ) ) {
+			return 'string';
 		}
-		if (empty( $type ) || $type === 'null' ) {
+
+		if ( empty( $type ) || $type === 'null' ) {
 			return 'string';
 		}
 
