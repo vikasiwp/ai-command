@@ -13,7 +13,8 @@ class MapRESTtoMCP {
     ) {}
 
 	public function args_to_schema( $args = [] ) {
-		$schema = [];
+		$schema   = [];
+		$required = [];
 
 		if ( empty( $args ) ) {
 			return [];
@@ -24,14 +25,18 @@ class MapRESTtoMCP {
 			$type 		 = $this->sanitize_type( $arg['type'] ?? 'string' );
 
 			$schema[ $title ] = [
-				'type' => $type, // TODO can be array.
+				'type' => $type,
 				'description' => $description,
 			];
+			if ( isset( $arg['required'] ) && $arg['required'] ) {
+				$required[] = $title;
+			}
 		}
 
 		return [
 			'type' => 'object',
-			'properties' => $schema
+			'properties' => $schema,
+			'required' => $required,
 		];
 	}
 
