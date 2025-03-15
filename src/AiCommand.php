@@ -45,101 +45,13 @@ class AiCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$server = new MCP\Server();
 
-		require_once( 'MapRESTtoMCP.php' );
 		$map_rest_to_mcp = new MapRESTtoMCP();
 		$map_rest_to_mcp->map_rest_to_mcp( $server );
+
+		print_r( $server->list_resources() );
+
 		return;
-		
-		global $wp_rest_server;
 
-		if (empty($wp_rest_server)) {
-			$wp_rest_server = rest_get_server();
-		}
-
-		$routes = $wp_rest_server->get_routes();
-		$controllers = [];
-
-		include_once( 'RESTControllerList.php' );
-		// Assume $rest_api_routes is the structured array defined above
-		foreach ($rest_api_routes as $controller => $routes) {
-			foreach ($routes as $route => $methods) {
-				foreach ($methods as $http_method => $description) {
-
-					// Generate a tool name based on route and method (e.g., "GET_/wp/v2/posts")
-					$tool_name = strtolower($http_method . '_' . str_replace(['/', '(', ')', '?', '[', ']', '+', '\\', '<', '>', ':', '-'], '_', $route));
-					$tool_name = preg_replace('/_+/', '_', trim($tool_name, '_'));
-
-					// Fetch the endpoint schema dynamically
-					$request = new \WP_REST_Request('OPTIONS', $route);
-					$rest_server  = rest_get_server();
-					$response = $rest_server->dispatch($request);
-					$schema = $response->get_data()['endpoints'][0]['args'] ?? [];
-
-					// Build inputSchema from retrieved schema
-					$inputSchema = [
-						'type' => 'object',
-						'properties' => [],
-						'required' => [],
-					];
-
-					foreach ($schema as $arg_name => $arg_details) {
-						$inputSchema['properties'][$arg_name] = [
-							'type' => isset($arg_details['type']) ? $arg_details['type'] : 'string',
-							'description' => isset($arg_details['description']) ? $arg_details['description'] : '',
-						];
-
-						if (!empty($arg_details['required'])) {
-							$inputSchema['required'][] = $arg_name;
-						}
-					}
-
-					// Closure to handle the callable action
-					$callable = function ($params) use ($http_method, $route) {
-						$request = new \WP_REST_Request($http_method, $route);
-
-						if ($http_method === 'GET') {
-							$request->set_query_params($params);
-						} else {
-							$request->set_body_params($params);
-						}
-
-						$rest_server = rest_get_server();
-						$response = $rest_server->dispatch($request);
-						return $response->get_data();
-					};
-
-					// Register the tool
-					$server->register_tool([
-						'name' => $tool_name,
-						'description' => $description,
-						'inputSchema' => $inputSchema,
-						'callable' => $callable,
-					]);
-				}
-			}
-		}
-
-		
-		// foreach ($routes as $route => $handlers) {
-		// 	if ( $route === '/wp/v2/posts' ) {
-		// 		foreach ($handlers as $handler) { 
-		// 			$methods   = isset($handler['methods']) ? $handler['methods'] : 'unknown';
-		// 			$args      = isset($handler['args']) ? $handler['args'] : [];
-		// 			$callback  = isset($handler['callback']) ? $handler['callback'] : 'unknown';
-
-		// 			$controllers[ $route ] = [
-		// 				'namespace' => $namespace,
-		// 				'methods'   => $methods,
-		// 				'args'      => $args,
-		// 				'callback'  => $callback,
-		// 			];
-		// 		}
-		// 	}
-		// }
-
-		// print_r( $controllers );
-		// return;
-		
 		$server->register_tool(
 			[
 				'name' => 'create_post',

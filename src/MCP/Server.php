@@ -163,7 +163,7 @@ class Server {
 		}
 	}
 
-	private function list_resources() {
+	public function list_resources() {
 		$result = [];
 		foreach ( $this->resources as $resource ) {
 			$result[] = [
