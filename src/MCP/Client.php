@@ -231,7 +231,7 @@ class Client {
 
 			WP_CLI::line( $text );
 
-			$response = \cli\prompt( 'Continue' );
+			$response = \cli\prompt( '', false, '' );
 
 			$parts = new Parts();
 			$parts->add_text_part( $response );
