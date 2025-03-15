@@ -18,7 +18,7 @@ class MapRESTtoMCP {
 		}
 		foreach ( $args as $title => $arg ) {
 			$description = $arg['description'] ?? $title;
-			$type 		 = $arg['type'] ?? 'string';
+			$type 		 = $this->sanitize_type( $arg['type'] ?? 'string' );
 
 			$schema[ $title ] = [
 				'type' => $type, // TODO can be array.
@@ -29,6 +29,36 @@ class MapRESTtoMCP {
 			'type' => 'object',
 			'properties' => $schema
 		];
+	}
+
+	protected function sanitize_type( $type) {
+		// Validated types:
+		if ( $type === 'string' || $type === 'integer' || $type === 'boolean' ) {
+			return $type;
+		}
+
+		if ( $type === 'array' || $type === 'object' ) {
+			return 'string'; // TODO, better solution.
+		}
+		if (empty( $type ) || $type === 'null' ) {
+			return 'string';
+		}
+
+		if ( !\is_array( $type ) ) {
+			throw new \Exception( 'Invalid type: ' . $type );
+			return 'string';
+		}
+
+		// Find valid values in array.
+		if ( \in_array( 'string', $type ) ) {
+			return 'string';
+		}
+		if ( \in_array( 'integer', $type ) ) {
+			return 'integer';
+		}
+		// TODO, better types handling.
+		return 'string';
+
 	}
 
 	public function get_endpoint_description( $route ) {
@@ -68,6 +98,7 @@ class MapRESTtoMCP {
                             // TODO $embed parameter is forced to true now
                             return rest_get_server()->response_to_data( $response, true );
 						},
+						'required' => ['id'], // TODO
 					] );
 				}
 
