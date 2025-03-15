@@ -12,7 +12,8 @@ class MapRESTtoMCP {
     ) {}
 
 	public function args_to_schema( $args = [] ) {
-		$schema = [];
+		$schema   = [];
+		$required = [];
 
 		if ( empty( $args ) ) {
 			return [];
@@ -23,14 +24,18 @@ class MapRESTtoMCP {
 			$type 		 = $this->sanitize_type( $arg['type'] ?? 'string' );
 
 			$schema[ $title ] = [
-				'type' => $type, // TODO can be array.
+				'type' => $type,
 				'description' => $description,
 			];
+			if ( isset( $arg['required'] ) && $arg['required'] ) {
+				$required[] = $title;
+			}
 		}
 
 		return [
 			'type' => 'object',
-			'properties' => $schema
+			'properties' => $schema,
+			'required' => $required,
 		];
 	}
 
@@ -93,6 +98,11 @@ class MapRESTtoMCP {
 						'description' => $this->rest_routes[ $route ][ $method_name ],
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
+							preg_match( '/\(?P<([a-z]+)>/', $route, $matches );
+							if ( isset( $matches[1] ) && isset( $inputs[ $matches[1] ] ) ) {
+								$route = preg_replace( '/(\(\?P<.*?\))/', $inputs[ $matches[1] ], $route, 1 );
+							}
+
 
 							\WP_CLI::debug( 'Rest Route: ' . $route . ' ' . $method_name, 'mcp_server' );
 							foreach( $inputs as $key => $value ) {
