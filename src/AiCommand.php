@@ -44,6 +44,48 @@ class AiCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$server = new MCP\Server();
 
+
+
+		$server->register_tool(
+			[
+				'name' => 'create_post',
+				'description' => 'Creates a post.',
+				'inputSchema' => [
+					'type' => 'object',
+					'properties' => [
+						'title' => [
+							'type' => 'string',
+							'description' => 'The title of the post.',
+						],
+						'content' => [
+							'type' => 'string',
+							'description' => 'The content of the post.',
+						],
+						'category' => [
+							'type' => 'string',
+							'description' => 'The category of the post.',
+						],
+					],
+					'required' => [ 'title', 'content' ],
+				],
+				'callable' => function ( $params ) {
+					$post_id = wp_insert_post( [
+						'post_title' => $params['title'],
+						'post_content' => $params['content'],
+						'post_category' => [ $params['category'] ],
+						'post_status' => 'publish',
+					] );
+					return get_permalink( $post_id );
+				},
+			]
+		);
+
+		$client = new MCP\Client( $server );
+		$result = $client->call_ai_service_with_prompt( $args[0] );
+
+		WP_CLI::success( $result );
+		return;
+
 		$server->register_tool(
 			[
 				'name'        => 'calculate_total',
@@ -137,5 +179,6 @@ class AiCommand extends WP_CLI_Command {
 		$result = $client->call_ai_service_with_prompt( $args[0] );
 
 		WP_CLI::success( $result );
+
 	}
 }
