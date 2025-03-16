@@ -69,10 +69,6 @@ class MapRESTtoMCP {
 
 	}
 
-	public function get_endpoint_description( $route ) {
-		return str_replace( '/wp/v2/', '', $route );
-	}
-
 	public function map_rest_to_mcp( Server $mcp_server ) {
 		$server = rest_get_server();
 		$routes = $server->get_routes();
