@@ -23,6 +23,12 @@ use WP_Error;
  */
 class AiCommand extends WP_CLI_Command {
 
+	public function __construct(
+		private ToolCollection $tools,
+	) {
+		parent::__construct();
+	}
+
 	/**
 	 * Greets the world.
 	 *
