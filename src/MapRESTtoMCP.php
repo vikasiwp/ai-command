@@ -2,17 +2,12 @@
 
 namespace WP_CLI\AiCommand;
 
-use WP_CLI\AiCommand\RouteInformation;
 use WP_CLI;
 use WP_CLI\AiCommand\MCP\Server;
 use WP_REST_Request;
 
 
 class MapRESTtoMCP {
-
-    public function __construct(
-        private array $rest_routes
-    ) {}
 
 	public function args_to_schema( $args = [] ) {
 		$schema   = [];
@@ -80,27 +75,12 @@ class MapRESTtoMCP {
 
 	}
 
-	protected function is_route_allowed( $route ) {
-		if(! \str_starts_with($route, '/wp/v2')) {
-			return false; // Block all non wp/v2 routes for now.
-		}
-
-		return ! in_array( $route, $this->rest_routes, true );
-	}
-
 	public function map_rest_to_mcp( Server $mcp_server ) {
-		/**
-		 * @var \WP_REST_Server $server
-		 */
 		$server = rest_get_server();
 		$routes = $server->get_routes();
 
 		foreach ( $routes as $route => $endpoints ) {
 			foreach ( $endpoints as $endpoint ) {
-				if ( ! $this->is_route_allowed($route) ) {
-					continue; // This route is the block list.
-				}
-
 				foreach( $endpoint['methods'] as $method_name => $enabled ) {
 					$information = new RouteInformation(
 						$route,
@@ -123,22 +103,12 @@ class MapRESTtoMCP {
 
 					$mcp_server->register_tool($tool);
 				}
-
 			}
 		}
-
-	}
-
-	protected function generate_tool_name($route, $method_name) {
-		$singular = '';
-		if ( \str_contains( $route, '(?P<' ) ) {
-			$singular = 'singular_';
-		}
-		return sanitize_title($route) . '_' . $singular . strtolower( $method_name );
 	}
 
 	/**
-	 * Create desciptrion based on route and method.
+	 * Create description based on route and method.
 	 *
 	 *
 	 * Get a list of posts             GET /wp/v2/posts

@@ -30,7 +30,7 @@ class RouteInformation
 			$route = preg_replace('/(\(\?P<' . $match . '>.*\))/', 'p_' . $match, $route, 1);
 		}
 
-		return $this->method . '_' . sanitize_title( $route );
+		return $this->method . '_' . sanitize_title($route);
 	}
 
 	public function get_method(): string
@@ -80,6 +80,11 @@ class RouteInformation
 
 	public function is_wp_rest_controller(): bool
 	{
+		// The callback form for a WP_REST_Controller is [ WP_REST_Controller, method ]
+		if ( ! is_array( $this->callback ) ) {
+			return false;
+		}
+
 		$allowed = [
 			WP_REST_Posts_Controller::class,
 			WP_REST_Users_Controller::class,
