@@ -230,9 +230,7 @@ class Client {
 				} elseif ( $part instanceof Function_Call_Part ) {
 					$function_result = $this->{$part->get_name()}( $part->get_args() );
 
-					// Capture the function name here
-					$function_name = $part->get_name();
-					echo "Output generated with the '$function_name' tool:\n"; // Log the function name
+					WP_CLI::debug( 'Calling Tool: ' . $part->get_name(), 'mcp_server' );
 
 					// Odd limitation of add_function_response_part().
 					if ( ! is_array( $function_result ) ) {
