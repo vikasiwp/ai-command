@@ -15,7 +15,7 @@ if ( file_exists( $ai_command_autoloader ) ) {
 	require_once $ai_command_autoloader;
 }
 
-WP_CLI::add_command( 'ai', function ( $args, $assoc_args ) {
+WP_CLI::add_command( 'ai', static function ( $args, $assoc_args ) {
 	$server = new MCP\Server();
 	$client = new MCP\Client($server);
 
