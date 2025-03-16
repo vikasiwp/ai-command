@@ -97,33 +97,6 @@ class AiCommand extends WP_CLI_Command {
 
 		$server->register_tool(
 			[
-				'name'        => 'calculate_total',
-				'description' => 'Calculates the total price.',
-				'inputSchema' => [
-					'type'       => 'object',
-					'properties' => [
-						'price'    => [
-							'type'        => 'integer',
-							'description' => 'The price of the item.',
-						],
-						'quantity' => [
-							'type'        => 'integer',
-							'description' => 'The quantity of items.',
-						],
-					],
-					'required'   => [ 'price', 'quantity' ],
-				],
-				'callable'    => function ( $params ) {
-					$price    = $params['price'] ?? 0;
-					$quantity = $params['quantity'] ?? 1;
-
-					return $price * $quantity;
-				},
-			]
-		);
-
-		$server->register_tool(
-			[
 				'name'        => 'fetch_wp_community_events',
 				'description' => 'Fetches upcoming WordPress community events near a specified city or the user\'s current location. If no events are found in the exact location, nearby events within a specific radius will be considered.',
 				'inputSchema' => [
