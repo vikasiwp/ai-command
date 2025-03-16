@@ -104,7 +104,7 @@ class MapRESTtoMCP {
 						'description' => $this->get_description( $route, $method_name, $endpoint ),
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
-							$this->rest_callable( $inputs, $route, $method_name, $server );
+							return $this->rest_callable( $inputs, $route, $method_name, $server );
 						},
 					];
 
@@ -185,7 +185,6 @@ class MapRESTtoMCP {
 		 */
 		$response = $server->dispatch( $request );
 
-		// TODO $embed parameter is forced to true now
-		return $server->response_to_data( $response, true );
+		return $server->response_to_data( $response, false );
 	}
 }
