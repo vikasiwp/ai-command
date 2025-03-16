@@ -2,6 +2,7 @@
 
 namespace WP_CLI\AiCommand;
 
+use WP_CLI;
 use WP_CLI\AiCommand\MCP\Server;
 use WP_REST_Request;
 
@@ -106,19 +107,18 @@ class MapRESTtoMCP {
 	}
 
 	protected function rest_callable( $inputs, $route, $method_name, $server ) {
-		preg_match( '/\(?P<([a-z]+)>/', $route, $matches );
+		preg_match_all( '/\(?P<(\w+)>/', $route, $matches );
 
-		if ( isset( $matches[1] ) && isset( $inputs[ $matches[1] ] ) ) {
-			$route = preg_replace( '/(\(\?P<'.$matches[1].'>.*?\))/', $inputs[ $matches[1] ], $route, 1 );
+		foreach( $matches[1] as $match ) {
+			if ( array_key_exists( $match, $inputs ) ) {
+				$route = preg_replace( '/(\(\?P<'.$match.'>.*?\))/', $inputs[$match], $route, 1 );
+			}
 		}
 
-		if ( isset( $matches[2] ) && isset( $inputs[ $matches[2] ] ) ) {
-			$route = preg_replace( '/(\(\?P<'.$matches[2].'\))/', $inputs[ $matches[1] ], $route, 1 );
-		}
+		WP_CLI::debug( 'Rest Route: ' . $route . ' ' . $method_name, 'mcp_server' );
 
-		\WP_CLI::debug( 'Rest Route: ' . $route . ' ' . $method_name, 'mcp_server' );
 		foreach( $inputs as $key => $value ) {
-			\WP_CLI::debug( '  param->' . $key . ' : ' . $value, 'mcp_server' );
+			WP_CLI::debug( '  param->' . $key . ' : ' . $value, 'mcp_server' );
 		}
 
 		$request = new WP_REST_Request( $method_name, $route  );
