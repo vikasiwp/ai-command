@@ -1,6 +1,6 @@
 <?php
 
-namespace AiCommand\Tools;
+namespace WP_CLI\AiCommand\Tools;
 
 class FileTools {
 
