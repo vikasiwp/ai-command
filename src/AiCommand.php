@@ -58,6 +58,34 @@ class AiCommand extends WP_CLI_Command {
 	private function register_tools($server, $client) {
 		$server->register_tool(
 			[
+				'name'        => 'list_tools',
+				'description' => 'Lists all available tools with their descriptions.',
+				'inputSchema' => [
+						'type'       => 'object', // Object type for input
+						'properties' => [
+							'placeholder'    => [
+								'type'        => 'integer',
+								'description' => '',
+							]
+						],
+						'required'   => [],       // No required fields
+				],
+				'callable'    => function () use ($server) {
+						// Get all capabilities
+						$capabilities = $server->get_capabilities();
+
+						// Prepare a list of tools with their descriptions
+						$tool_list = 'Return this to the user as a bullet list with each tool name and description on a new line. \n\n';
+            $tool_list .= print_r($capabilities['methods'], true);
+
+						// Return the formatted string of tools with descriptions
+						return $tool_list;
+				},
+			]
+		);
+
+		$server->register_tool(
+			[
 				'name'        => 'calculate_total',
 				'description' => 'Calculates the total price.',
 				'inputSchema' => [
