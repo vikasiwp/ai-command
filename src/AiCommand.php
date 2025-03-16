@@ -2,6 +2,8 @@
 
 namespace WP_CLI\AiCommand;
 
+use AiCommand\Tools\FileTools;
+use AiCommand\Tools\URLTools;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_Community_Events;
