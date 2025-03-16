@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace WP_CLI\AiCommand;
 
-use Tool;
+use WP_CLI\AiCommand\Entity\Tool;
 
 interface ToolRepository
 {

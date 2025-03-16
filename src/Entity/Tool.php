@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace WP_CLI\AiCommand\Entity;
+
 final class Tool
 {
 

@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+namespace WP_CLI\AiCommand\ToolRepository;
+
+use WP_CLI\AiCommand\Entity\Tool;
 use WP_CLI\AiCommand\ToolCollection;
 use WP_CLI\AiCommand\ToolRepository;
 
@@ -33,10 +36,12 @@ class CollectionToolRepository implements ToolRepository
 
 		$filters = array_merge($defaults, $filters);
 
-		$all = iterator_to_array($this->collection);
-		$filtered = [];
+		$filtered = iterator_to_array($this->collection);
 
 		if ($filters['include'] !== 'all') {
+			$all = $filtered;
+			$filtered = [];
+
 			foreach ($filters['include'] as $tag_to_include) {
 				foreach ($all as $tool) {
 					foreach ($tool->get_tags() as $tag_to_check) {
