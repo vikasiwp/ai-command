@@ -87,6 +87,9 @@ class MapRESTtoMCP {
 	}
 
 	public function map_rest_to_mcp( Server $mcp_server ) {
+		/**
+		 * @var \WP_REST_Server $server
+		 */
 		$server = rest_get_server();
 		$routes = $server->get_routes();
 
@@ -162,7 +165,7 @@ class MapRESTtoMCP {
 		return $verb[ $method_name ] . ' ' . $singular . ' ' . $title;
 	}
 
-	protected function rest_callable( $inputs, $route, $method_name, $server ) {
+	protected function rest_callable( $inputs, $route, $method_name, \WP_REST_Server $server ) {
 		preg_match_all( '/\(?P<(\w+)>/', $route, $matches );
 
 		foreach( $matches[1] as $match ) {
@@ -185,6 +188,20 @@ class MapRESTtoMCP {
 		 */
 		$response = $server->dispatch( $request );
 
-		return $server->response_to_data( $response, false );
+		$data = $server->response_to_data( $response, false );
+
+		if( isset( $data[0]['slug'] ) ) {
+			$debug_data = 'Result List: ';
+			foreach ( $data as $item ) {
+				$debug_data .= $item['id'] . '=>' . $item['slug'] . ', ';
+			}
+		} elseif( isset( $data['slug'] ) ) {
+			$debug_data = 'Result: ' . $data['id'] . ' ' . $data['slug'];
+		} else {
+			$debug_data = 'Unknown format';
+		}
+		WP_CLI::debug( $debug_data, 'mcp_server' );
+
+		return $data;
 	}
 }
