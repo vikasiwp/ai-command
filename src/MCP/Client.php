@@ -128,6 +128,7 @@ class Client {
 	}
 
 	public function call_ai_service_with_prompt( string $prompt ) {
+		\WP_CLI::debug( "Prompt: {$prompt}", 'mcp_server' );
 		$parts = new Parts();
 		$parts->add_text_part( $prompt );
 		$content = new Content( Content_Role::USER, $parts );

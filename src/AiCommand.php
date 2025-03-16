@@ -20,6 +20,7 @@ use WP_Error;
  * Servers provide context, tools, and prompts to clients
  */
 class AiCommand extends WP_CLI_Command {
+
 	/**
 	 * Greets the world.
 	 *
@@ -82,6 +83,47 @@ class AiCommand extends WP_CLI_Command {
 
 						// Return the formatted string of tools with descriptions
 						return $tool_list;
+				},
+			]
+		);
+
+		$map_rest_to_mcp = new MapRESTtoMCP();
+		$map_rest_to_mcp->map_rest_to_mcp( $server );
+
+		$server->register_tool(
+			[
+				'name' => 'create_post',
+				'description' => 'Creates a post.',
+				'inputSchema' => [
+					'type' => 'object',
+					'properties' => [
+						'title' => [
+							'type' => 'string',
+							'description' => 'The title of the post.',
+						],
+						'content' => [
+							'type' => 'string',
+							'description' => 'The content of the post.',
+						],
+						'category' => [
+							'type' => 'string',
+							'description' => 'The category of the post.',
+						],
+					],
+					'required' => [ 'title', 'content' ],
+				],
+				'callable' => function ( $params ) {
+					$request = new \WP_REST_Request( 'POST', '/wp/v2/posts' );
+					$request->set_body_params( [
+						'title'      => $params['title'],
+						'content'    => $params['content'],
+						'categories' => [ $params['category'] ],
+						'status'     => 'publish',
+					] );
+					$controller = new \WP_REST_Posts_Controller( 'post' );
+					$response   = $controller->create_item( $request );
+					$data       = $response->get_data();
+					return $data;
 				},
 			]
 		);
@@ -272,7 +314,6 @@ class AiCommand extends WP_CLI_Command {
 					},
 			]
 		);
-
 	}
 
 	// Register resources for AI access
