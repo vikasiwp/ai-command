@@ -2,9 +2,11 @@
 
 namespace WP_CLI\AiCommand;
 
+use WP_CLI\AiCommand\RouteInformation;
 use WP_CLI;
 use WP_CLI\AiCommand\MCP\Server;
 use WP_REST_Request;
+
 
 class MapRESTtoMCP {
 
@@ -96,12 +98,20 @@ class MapRESTtoMCP {
 					continue; // This route is the block list.
 				}
 
-
 				foreach( $endpoint['methods'] as $method_name => $enabled ) {
+					$information = new RouteInformation(
+						$route,
+						$method_name,
+						$endpoint['callback'],
+					);
+
+					if ( ! $information->is_wp_rest_controller() ) {
+						continue;
+					}
 
 					$tool = [
-						'name' => $this->generate_tool_name($route, $method_name),
-						'description' => $this->generate_description( $route, $method_name, $endpoint ),
+						'name' => $information->get_sanitized_route_name(),
+						'description' => $this->generate_description( $information ),
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
 							return $this->rest_callable( $inputs, $route, $method_name, $server );
@@ -113,6 +123,7 @@ class MapRESTtoMCP {
 
 			}
 		}
+
 	}
 
 	protected function generate_tool_name($route, $method_name) {
@@ -130,36 +141,23 @@ class MapRESTtoMCP {
 	 * Get a list of posts             GET /wp/v2/posts
 	 * Get post with id                GET /wp/v2/posts/(?P<id>[\d]+)
 	 */
-	protected function generate_description( $route, $method_name, $endpoint ) {
+	protected function generate_description( RouteInformation $information  )  : string {
 
-		 // TODO all validation + exception handling.
-		$verb = array(
+		$verb = match ($information->get_method()) {
 			'GET' => 'Get',
 			'POST' => 'Create',
-			'PUT' => 'Update',
-			'PATCH' => 'Update',
+			'PUT', 'PATCH'  => 'Update',
 			'DELETE' => 'Delete',
-		);
+		};
 
-		$controller = $endpoint['callback'][0];
-		if ( !isset($endpoint['callback']) || ! \is_object($endpoint['callback'][0])) {
-			throw new \Exception('Not an object: ' . $route);
-		}
-		if (! \method_exists($endpoint['callback'][0], 'get_public_item_schema')) {
-			throw new \Exception('missing method: ' . $route);
-		}
-
-		$schema = $controller->get_public_item_schema();
+		$schema = $information->get_wp_rest_controller()->get_public_item_schema();
 		$title = $schema['title'];
 
-		// is singular?
-		$singular = 'a';
-		if ( $method_name === 'GET' && ! \str_contains( $route, '(?P<' )) {
-			$singular = 'List of';
+		$determiner = $information->is_singular()
+			? 'a'
+			: 'list of';
 
-		}
-
-		return $verb[ $method_name ] . ' ' . $singular . ' ' . $title;
+		return $verb . ' ' . $determiner . ' ' . $title;
 	}
 
 	protected function rest_callable( $inputs, $route, $method_name, $server ) {

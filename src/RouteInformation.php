@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+namespace WP_CLI\AiCommand;
+
+use BadMethodCallException;
+use WP_REST_Controller;
+use WP_REST_Posts_Controller;
+use WP_REST_Taxonomies_Controller;
+use WP_REST_Users_Controller;
+
 class RouteInformation
 {
 
@@ -12,19 +20,32 @@ class RouteInformation
 	) {
 	}
 
+	public function get_sanitized_route_name(): string
+	{
+		$route = $this->route;
+
+		preg_match_all('/\(?P<(\w+)>/', $this->route, $matches);
+
+		foreach ($matches[1] as $match) {
+			$route = preg_replace('/(\(\?P<' . $match . '>.*\))/', 'p_' . $match, $route, 1);
+		}
+
+		return $this->method . '_' . sanitize_title( $route );
+	}
+
 	public function get_method(): string
 	{
 		return $this->method;
 	}
 
-	public function is_post(): bool
+	public function is_create(): bool
 	{
 		return $this->method === 'POST';
 	}
 
-	public function is_put(): bool
+	public function is_update(): bool
 	{
-		return $this->method === 'PUT';
+		return $this->method === 'PUT' || $this->method === 'PATCH';
 	}
 
 	public function is_delete(): bool
@@ -32,9 +53,9 @@ class RouteInformation
 		return $this->method === 'DELETE';
 	}
 
-	public function is_put(): bool
+	public function is_get(): bool
 	{
-		return $this->method === 'PUT';
+		return $this->method === 'GET';
 	}
 
 	public function is_singular(): bool
@@ -57,7 +78,7 @@ class RouteInformation
 		return ! $this->is_singular();
 	}
 
-	public function is_wp_rest_controller()
+	public function is_wp_rest_controller(): bool
 	{
 		$allowed = [
 			WP_REST_Posts_Controller::class,
@@ -72,6 +93,15 @@ class RouteInformation
 		}
 
 		return false;
+	}
+
+	public function get_wp_rest_controller(): WP_REST_Controller
+	{
+		if ( ! $this->is_wp_rest_controller()) {
+			throw new BadMethodCallException('The callback needs to be a WP_Rest_Controller');
+		}
+
+		return $this->callback[0];
 	}
 
 }
