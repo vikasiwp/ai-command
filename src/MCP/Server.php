@@ -3,6 +3,7 @@
 namespace WP_CLI\AiCommand\MCP;
 
 use Exception;
+use WP_CLI;
 use InvalidArgumentException;
 
 class Server {
@@ -51,6 +52,7 @@ class Server {
 
 		// TODO: This is a temporary limit.
 		if ( count( $this->tools ) >= 128 ) {
+			WP_CLI::debug( 'Too many tools, max is 128', 'tools' );
 			return;
 		}
 
