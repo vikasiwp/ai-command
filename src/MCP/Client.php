@@ -122,7 +122,7 @@ class Client {
 
 		// See https://github.com/felixarntz/ai-services/blob/main/docs/Accessing-AI-Services-in-PHP.md for further processing.
 
-		WP_CLI::log( "Generated image: $image_url" );
+		WP_CLI::debug( "Generated image: $image_url", 'ai' );
 
 		return $image_url;
 	}
@@ -173,12 +173,19 @@ class Client {
 				]
 			);
 
-			\WP_CLI::debug( print_r($contents, true), 'mcp_server_raw' );
+		  \WP_CLI::debug( 'Making request...' . print_r( $contents, true ), 'ai' );
+
+			if ( $service->get_service_slug() === 'openai' ) {
+				$model = 'gpt-4o';
+			} else {
+				$model = 'gemini-2.0-flash';
+			}
 
 			$candidates = $service
 				->get_model(
 					[
 						'feature'      => 'text-generation',
+						'model'        => $model,
 						'tools'        => $tools,
 						'capabilities' => [
 							AI_Capability::MULTIMODAL_INPUT,
@@ -198,6 +205,10 @@ class Client {
 					$text .= $part->get_text();
 				} elseif ( $part instanceof Function_Call_Part ) {
 					$function_result = $this->{$part->get_name()}( $part->get_args() );
+
+					// Capture the function name here
+					$function_name = $part->get_name();
+					echo "Output generated with the '$function_name' tool:\n"; // Log the function name
 
 					// Odd limitation of add_function_response_part().
 					if ( ! is_array( $function_result ) ) {
@@ -221,7 +232,17 @@ class Client {
 				return $this->call_ai_service( $new_contents );
 			}
 
-			return $text;
+			// Keep the session open to continue chatting.
+
+			WP_CLI::line( $text );
+
+			$response = \cli\prompt( '', false, '' );
+
+			$parts = new Parts();
+			$parts->add_text_part( $response );
+			$content        = new Content( Content_Role::USER, $parts );
+			$new_contents[] = $content;
+			return $this->call_ai_service( $new_contents );
 		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}
