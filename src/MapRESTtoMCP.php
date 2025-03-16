@@ -100,8 +100,8 @@ class MapRESTtoMCP {
 				foreach( $endpoint['methods'] as $method_name => $enabled ) {
 
 					$tool = [
-						'name' => $this->get_tool_name($route, $method_name),
-						'description' => $this->get_description( $route, $method_name, $endpoint ),
+						'name' => $this->generate_tool_name($route, $method_name),
+						'description' => $this->generate_description( $route, $method_name, $endpoint ),
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
 							return $this->rest_callable( $inputs, $route, $method_name, $server );
@@ -115,22 +115,22 @@ class MapRESTtoMCP {
 		}
 	}
 
-	protected function get_tool_name($route, $method_name) {
+	protected function generate_tool_name($route, $method_name) {
 		$singular = '';
 		if ( \str_contains( $route, '(?P<' ) ) {
 			$singular = 'singular_';
 		}
 		return sanitize_title($route) . '_' . $singular . strtolower( $method_name );
-
 	}
 
 	/**
-	 * Examples:
+	 * Create desciptrion based on route and method.
+	 *
 	 *
 	 * Get a list of posts             GET /wp/v2/posts
 	 * Get post with id                GET /wp/v2/posts/(?P<id>[\d]+)
 	 */
-	protected function get_description( $route, $method_name, $endpoint ) {
+	protected function generate_description( $route, $method_name, $endpoint ) {
 
 		 // TODO all validation + exception handling.
 		$verb = array(
@@ -142,7 +142,7 @@ class MapRESTtoMCP {
 		);
 
 		$controller = $endpoint['callback'][0];
-		if (! \is_object($endpoint['callback'][0])) {
+		if ( !isset($endpoint['callback']) || ! \is_object($endpoint['callback'][0])) {
 			throw new \Exception('Not an object: ' . $route);
 		}
 		if (! \method_exists($endpoint['callback'][0], 'get_public_item_schema')) {
