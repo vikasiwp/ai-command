@@ -49,6 +49,11 @@ class Server {
 		$description  = $tool_definition['description'] ?? null;
 		$input_schema = $tool_definition['inputSchema'] ?? null;
 
+		// TODO: This is a temporary limit.
+		if ( count( $this->tools ) >= 128 ) {
+			return;
+		}
+
 		$this->tools[ $name ] = [
 			'name'        => $name,
 			'callable'    => $callable,
