@@ -1,15 +1,9 @@
 <?php
 
 namespace WP_CLI\AiCommand;
-use WP_CLI\AiCommand\Entity\Tool;
 
 class ImageTools {
 
-	private $client;
-
-	public function __construct($client) {
-		$this->client = $client;
-	}
 
 	public function get_tools(){
 		return [
@@ -32,9 +26,8 @@ class ImageTools {
 					],
 					'required'   => [ 'prompt' ],
 				],
-				'callable'    => function ( $params ) {
-
-					return $this->client->get_image_from_ai_service( $params['prompt'] );
+				'callable'    => function ( $params ) use ( $client ) {
+					return $client->get_image_from_ai_service( $params['prompt'] );
 				},
 			]
 			);

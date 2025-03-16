@@ -23,10 +23,15 @@ WP_CLI::add_command( 'ai', static function ( $args, $assoc_args ) {
 
 	// TODO Register your tool here and add it to the collection
 
-	$all_tools = [
-		...(new ImageTools($client))->get_tools(),
-		...(new MapRESTtoMCP())->map_rest_to_mcp(),
-	];
+	$image_tools = new ImageTools();
+
+	foreach($image_tools->get_tools() as $tool){
+		$tools->add($tool);
+	}
+
+
+	// WordPress REST calls
+	$rest_tools = new MapRESTtoMCP();
 
 	foreach ($all_tools as $tool) {
 		$tools->add($tool);
