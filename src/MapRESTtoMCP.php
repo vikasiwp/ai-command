@@ -41,9 +41,17 @@ class MapRESTtoMCP {
 	}
 
 	protected function sanitize_type( $type) {
+
+		$mapping = array(
+			'string' => 'string',
+			'integer' => 'integer',
+			'number' => 'integer',
+			'boolean' => 'boolean',
+		);
+
 		// Validated types:
-		if ( $type === 'string' || $type === 'integer' || $type === 'boolean' ) {
-			return $type;
+		if ( !\is_array($type) && isset($mapping[ $type ]) ) {
+			return $mapping[ $type ];
 		}
 
 		if ( $type === 'array' || $type === 'object' ) {
@@ -62,7 +70,7 @@ class MapRESTtoMCP {
 		if ( \in_array( 'string', $type ) ) {
 			return 'string';
 		}
-		if ( \in_array( 'integer', $type ) ) {
+		if ( \in_array( 'integer', $type )  ) {
 			return 'integer';
 		}
 		// TODO, better types handling.
@@ -70,29 +78,30 @@ class MapRESTtoMCP {
 
 	}
 
+	protected function is_route_allowed( $route ) {
+		if(! \str_starts_with($route, '/wp/v2')) {
+			return false; // Block all non wp/v2 routes for now.
+		}
+
+		return ! in_array( $route, $this->rest_routes, true );
+	}
+
 	public function map_rest_to_mcp( Server $mcp_server ) {
 		$server = rest_get_server();
 		$routes = $server->get_routes();
 
-        foreach ( $routes as $route => $endpoints ) {
+		foreach ( $routes as $route => $endpoints ) {
 			foreach ( $endpoints as $endpoint ) {
-				// Only allowed routes
-				if ( ! isset( $this->rest_routes[ $route ] ) ) {
-					continue;
+				if ( ! $this->is_route_allowed($route) ) {
+					continue; // This route is the block list.
 				}
 
-				// Generate a tool name off route e.g. /wp/v2/posts
-				$tool_name = sanitize_key($route);
 
 				foreach( $endpoint['methods'] as $method_name => $enabled ) {
-					// Only allowed methods
-					if ( ! isset( $this->rest_routes[ $route ][ $method_name ] ) ) {
-						continue;
-					}
 
 					$tool = [
-						'name' => $tool_name . '_' . strtolower( $method_name ),
-						'description' => $this->rest_routes[ $route ][ $method_name ],
+						'name' => $this->get_tool_name($route, $method_name),
+						'description' => $this->get_description( $route, $method_name, $endpoint ),
 						'inputSchema' => $this->args_to_schema( $endpoint['args'] ),
 						'callable' => function ( $inputs ) use ( $route, $method_name, $server ){
 							$this->rest_callable( $inputs, $route, $method_name, $server );
@@ -104,6 +113,53 @@ class MapRESTtoMCP {
 
 			}
 		}
+	}
+
+	protected function get_tool_name($route, $method_name) {
+		$singular = '';
+		if ( \str_contains( $route, '(?P<' ) ) {
+			$singular = 'singular_';
+		}
+		return sanitize_title($route) . '_' . $singular . strtolower( $method_name );
+
+	}
+
+	/**
+	 * Examples:
+	 *
+	 * Get a list of posts             GET /wp/v2/posts
+	 * Get post with id                GET /wp/v2/posts/(?P<id>[\d]+)
+	 */
+	protected function get_description( $route, $method_name, $endpoint ) {
+
+		 // TODO all validation + exception handling.
+		$verb = array(
+			'GET' => 'Get',
+			'POST' => 'Create',
+			'PUT' => 'Update',
+			'PATCH' => 'Update',
+			'DELETE' => 'Delete',
+		);
+
+		$controller = $endpoint['callback'][0];
+		if (! \is_object($endpoint['callback'][0])) {
+			throw new \Exception('Not an object: ' . $route);
+		}
+		if (! \method_exists($endpoint['callback'][0], 'get_public_item_schema')) {
+			throw new \Exception('missing method: ' . $route);
+		}
+
+		$schema = $controller->get_public_item_schema();
+		$title = $schema['title'];
+
+		// is singular?
+		$singular = 'a';
+		if ( $method_name === 'GET' && ! \str_contains( $route, '(?P<' )) {
+			$singular = 'List of';
+
+		}
+
+		return $verb[ $method_name ] . ' ' . $singular . ' ' . $title;
 	}
 
 	protected function rest_callable( $inputs, $route, $method_name, $server ) {
@@ -124,6 +180,9 @@ class MapRESTtoMCP {
 		$request = new WP_REST_Request( $method_name, $route  );
 		$request->set_body_params( $inputs );
 
+		/**
+		 * @var WP_REST_Response $response
+		 */
 		$response = $server->dispatch( $request );
 
 		// TODO $embed parameter is forced to true now
