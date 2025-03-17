@@ -30,8 +30,8 @@ WP_CLI::add_command( 'ai', static function ( $args, $assoc_args ) {
 	}
 
 
-	// WordPress REST calls
-	$rest_tools = new MapRESTtoMCP();
+	// WordPress REST calls TODO; make this class compatible with the new Tool class.
+	$rest_tools = (new MapRESTtoMCP())->map_rest_to_mcp();
 
 	foreach ($rest_tools as $tool) {
 		$tools->add($tool);
