@@ -67,17 +67,13 @@ class AiCommand extends WP_CLI_Command {
 	// Register tools for AI processing
 	private function register_tools($server) : void {
 		$filters = apply_filters( 'wp_cli/ai_command/command/filters', [] );
+		$tools = $this->tools->find_all( $filters );
 
-		foreach( $this->tools->find_all( $filters ) as $tool ) {
+		foreach( $tools as $tool ) {
 			$server->register_tool( $tool->get_data() );
 		}
 
 		$this->register_media_resources($server);
-
-		return;
-
-		new FileTools( $server );
-		new URLTools( $server );
 	}
 
 	// Register resources for AI access
