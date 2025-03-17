@@ -59,7 +59,7 @@ class ImageTools {
 									'description' => 'The prompt for generating the image.',
 								],
 								'media_id' => [
-									'type'        => 'integer',
+									'type'        => 'string',
 									'description' => 'the id of the media element',
 								],
 							],
@@ -68,8 +68,6 @@ class ImageTools {
 						'callable'    => function ( $params ) {
 							$media_uri      = 'media://' . $params['media_id'];
 							$media_resource = $this->server->get_resource_data( $media_uri );
-
-							\WP_CLI\AiCommand\custom_tome_log($media_resource);
 							return $this->client->modify_image_with_ai( $params['prompt'], $media_resource );
 						},
 					]
