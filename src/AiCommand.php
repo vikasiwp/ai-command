@@ -68,13 +68,14 @@ class AiCommand extends WP_CLI_Command {
 	private function register_tools($server) : void {
 		// TODO; Is this the correct place? Or should the server already have the tools registered?
 		$filters = apply_filters( 'wp_cli/ai_command/command/filters', [] );
+		$tools = $this->tools->find_all( $filters );
 
-		foreach( $this->tools->find_all( $filters ) as $tool ) {
+		foreach( $tools as $tool ) {
 			$server->register_tool( $tool->get_data() );
 		}
 
 		$this->register_media_resources($server);
-}
+	}
 
 	/**
 	 * Register resources for AI access
