@@ -321,7 +321,11 @@ class Client {
     $base64_image = base64_encode($image_contents);
 
     // API Configuration
-		$api_key = "";
+		$api_key = get_option('ais_google_api_key');
+
+		if(!$api_key) {
+			WP_CLI::error("Gemini API Key is not available");
+		}
 		$model = 'gemini-2.0-flash-exp';
     $api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}";
 

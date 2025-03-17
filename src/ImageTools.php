@@ -68,6 +68,8 @@ class ImageTools {
 						'callable'    => function ( $params ) {
 							$media_uri      = 'media://' . $params['media_id'];
 							$media_resource = $this->server->get_resource_data( $media_uri );
+
+							\WP_CLI\AiCommand\custom_tome_log($media_resource);
 							return $this->client->modify_image_with_ai( $params['prompt'], $media_resource );
 						},
 					]
