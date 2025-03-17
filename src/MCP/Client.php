@@ -296,9 +296,9 @@ class Client {
 
 			// Keep the session open to continue chatting.
 
-			WP_CLI::line( $text );
+			WP_CLI::line( "\033[38;5;10m" . $text . "\033[0m" );
 
-			$response = \cli\prompt( '', false, '' );
+			$response = \cli\prompt( '', false, '> ' );
 
 			$parts = new Parts();
 			$parts->add_text_part( $response );
