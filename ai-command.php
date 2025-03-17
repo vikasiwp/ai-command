@@ -23,7 +23,7 @@ WP_CLI::add_command( 'ai', static function ( $args, $assoc_args ) {
 
 	// TODO Register your tool here and add it to the collection
 
-	$image_tools = new ImageTools($client);
+	$image_tools = new ImageTools($client, $server);
 
 	foreach($image_tools->get_tools() as $tool){
 		$tools->add($tool);
@@ -44,3 +44,26 @@ WP_CLI::add_command( 'ai', static function ( $args, $assoc_args ) {
 	);
 	$ai_command( $args, $assoc_args );
 } );
+
+
+
+if(!function_exists('\WP_CLI\AiCommand\custom_tome_log')) {
+	function custom_tome_log( $message, $data = '' ) {
+
+		$log = trailingslashit( dirname(__FILE__)) . 'log/';
+		if ( ! is_dir( $log ) ) {
+				mkdir( $log );
+		}
+
+		$file = $log . date( 'Y-m-d' ) . '.log';
+		if ( ! is_file( $file ) ) {
+				file_put_contents( $file, '' );
+		}
+		if ( ! empty( $data ) ) {
+				$message = array( $message => $data );
+		}
+		$data_string = print_r( $message, true ) . "\n";
+		file_put_contents( $file, $data_string, FILE_APPEND );
+	}
+
+}

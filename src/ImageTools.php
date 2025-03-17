@@ -2,20 +2,24 @@
 
 namespace WP_CLI\AiCommand;
 use WP_CLI\AiCommand\Entity\Tool;
+use WP_CLI\AiCommand\custom_tome_log;
 
 
 class ImageTools {
 
-	public $client;
+	protected $client;
+	protected $server;
 
-	public function __construct($client) {
+	public function __construct($client, $server) {
 		$this->client = $client;
+		$this->server = $server;
 	}
 
 
 	public function get_tools(){
 		return [
-				$this->image_generation_tool()
+				$this->image_generation_tool(),
+				$this->image_modification_tool()
 		];
 	}
 
@@ -39,5 +43,35 @@ class ImageTools {
 				},
 			]
 			);
+	}
+
+	public function image_modification_tool() {
+
+		return new Tool(
+					[
+						'name'        => 'modify_image',
+						'description' => 'Modifies an image with a given image id and prompt.',
+						'inputSchema' => [
+							'type'       => 'object',
+							'properties' => [
+								'prompt'   => [
+									'type'        => 'string',
+									'description' => 'The prompt for generating the image.',
+								],
+								'media_id' => [
+									'type'        => 'integer',
+									'description' => 'the id of the media element',
+								],
+							],
+							'required'   => [ 'prompt', 'media_id' ],
+						],
+						'callable'    => function ( $params ) {
+							$media_uri      = 'media://' . $params['media_id'];
+							$media_resource = $this->server->get_resource_data( $media_uri );
+							return $this->client->modify_image_with_ai( $params['prompt'], $media_resource );
+						},
+					]
+					);
+
 	}
 }
