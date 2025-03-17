@@ -62,6 +62,19 @@ Want to contribute a new feature? Please first [open a new issue](https://github
 
 Once you've decided to commit the time to seeing your pull request through, [please follow our guidelines for creating a pull request](https://make.wordpress.org/cli/handbook/pull-requests/) to make sure it's a pleasant experience. See "[Setting up](https://make.wordpress.org/cli/handbook/pull-requests/#setting-up)" for details specific to working on this package locally.
 
+### Cloudfest Hackathon Contributors
+
+- Pascal Birchler - [@swissspidy](https://github.com/swissspidy)
+- Jan-Willem Oostendorp - [@janw-me](https://github.com/janw-me)
+- Joost de Valk - [@jdevalk](https://github.com/jdevalk)
+- Marco Chiesi - [@marcochiesi](https://github.com/marcochiesi)
+- Matt Biscay - [@skyminds](https://github.com/skyminds)
+- Moritz Bappert - [@moritzbappert](https://github.com/moritzbappert)
+- James Hunt - [@thetwopct](https://github.com/thetwopct)
+- Tome Pajkovski - [@tomepajk](https://github.com/tomepajk)
+- David Mosterd - [@davidmosterd](https://github.com/davidmosterd)
+- Milana Cap - [@zzap](https://github.com/zzap)
+
 ## Support
 
 GitHub issues aren't for general support questions, but there are other venues you can try: https://wp-cli.org/#support
