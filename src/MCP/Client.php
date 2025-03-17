@@ -321,8 +321,8 @@ class Client {
     $base64_image = base64_encode($image_contents);
 
     // API Configuration
-    $api_key = 'AIzaSyBqCwJnOiF_muJ9vjAg7gc7xKS6o_Zxtok';
-    $model = 'gemini-2.0-flash-exp';
+		$api_key = "";
+		$model = 'gemini-2.0-flash-exp';
     $api_url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}";
 
     // Prepare request payload
