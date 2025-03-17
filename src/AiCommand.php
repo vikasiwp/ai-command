@@ -66,6 +66,7 @@ class AiCommand extends WP_CLI_Command {
 
 	// Register tools for AI processing
 	private function register_tools($server) : void {
+		// TODO; Is this the correct place? Or should the server already have the tools registered?
 		$filters = apply_filters( 'wp_cli/ai_command/command/filters', [] );
 
 		foreach( $this->tools->find_all( $filters ) as $tool ) {
@@ -73,14 +74,15 @@ class AiCommand extends WP_CLI_Command {
 		}
 
 		$this->register_media_resources($server);
+}
 
-		return;
-
-		new FileTools( $server );
-		new URLTools( $server );
-	}
-
-	// Register resources for AI access
+	/**
+	 * Register resources for AI access
+	 *
+	 * TODO remove this function.
+	 * A) it does not belong here
+	 * B) it is not used*
+	 */
 	private function register_resources($server) {
 		// Register Users resource
 		$server->register_resource([
@@ -101,6 +103,9 @@ class AiCommand extends WP_CLI_Command {
 		]);
 	}
 
+	/**
+	 * TODO Move Probably don't want this in the command class.
+	 */
 	protected function register_media_resources( $server ) {
 
 		$args = array(
