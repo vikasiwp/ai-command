@@ -62,7 +62,7 @@ class Client {
 	}
 
 	// Must not have the same name as the tool, otherwise it takes precedence.
-	public function get_image_from_ai_service( string $prompt ) {
+	public function get_image_from_ai_service( string $prompt, string $title = 'ai-generated-image' ) {
 		// See https://github.com/felixarntz/ai-services/issues/25.
 		add_filter(
 			'map_meta_cap',
@@ -101,7 +101,7 @@ class Client {
 				$image_blob = Helpers::base64_data_url_to_blob( $image_url );
 
 				if ( $image_blob ) {
-					$filename  = tempnam( '/tmp', 'ai-generated-image' );
+					$filename  = tempnam( '/tmp', \sanitize_title( $title ) . '-');
 					$parts     = explode( '/', $part->get_mime_type() );
 					$extension = $parts[1];
 					rename( $filename, $filename . '.' . $extension );
@@ -110,7 +110,7 @@ class Client {
 					file_put_contents( $filename, $image_blob->get_binary_data() );
 
 					$image_url = $filename;
-					$image_id = \WP_CLI\AiCommand\MediaManager::upload_to_media_library($image_url);
+					$image_id = \WP_CLI\AiCommand\MediaManager::upload_to_media_library($image_url, $title);
 				}
 
 				break;

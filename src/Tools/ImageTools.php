@@ -35,11 +35,18 @@ class ImageTools {
 							'type'        => 'string',
 							'description' => 'The prompt for generating the image.',
 						],
+						'title' => [
+							'type'        => 'string',
+							'description' => 'the title of the image, also used in filename.',
+						],
 					],
 					'required'   => [ 'prompt' ],
 				],
 				'callable'    => function ( $params ) {
-					return $this->client->get_image_from_ai_service( $params['prompt'] );
+					if (empty($params['title'])) {
+						$params['title'] = $params['prompt'];
+					}
+					return $this->client->get_image_from_ai_service( $params['prompt'], $params['title'] );
 				},
 			]
 			);

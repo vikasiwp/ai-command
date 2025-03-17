@@ -4,7 +4,7 @@ namespace WP_CLI\AiCommand;
 
 class MediaManager {
 
-	public static function upload_to_media_library($media_path) {
+	public static function upload_to_media_library($media_path, string $title = null) {
 		// Get WordPress upload directory information
 		$upload_dir = wp_upload_dir();
 
@@ -19,7 +19,7 @@ class MediaManager {
 		$wp_filetype = wp_check_filetype($file_name, null);
 		$attachment = array(
 			'post_mime_type' => $wp_filetype['type'],
-			'post_title'     => sanitize_file_name($file_name),
+			'post_title'     => $title ?? sanitize_file_name($file_name),
 			'post_content'   => '',
 			'post_status'    => 'inherit'
 		);
